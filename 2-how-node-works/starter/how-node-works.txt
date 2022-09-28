@@ -1,0 +1,182 @@
+###Node Architecture######
+
+Node runtime has several dependencies.
+The most important ones are the V8 JavaScript engine 
+and libuv.
+Node is a runtime built on top of the googles V8 engine.
+If it wasn't for V8 node would have no way of understanding JavaScript code.
+V8 is a fundamental part of the node's arhitecture.
+V8 engine converts JavaScript code into machine code the computer can understand.
+But that alıne is not enough to create a server side rendering framework like node.
+Thats why we have the libuv. 
+
+The libuv is a open source library with a stong focus on asynchronous i/o.
+This layer is what gives node the access to the underlaying computer operating system,
+file system, networking, and more.
+Besides that libuv also implements two extremaely important features of node.js.
+Whic are the event loop and the thread pool.
+In simple terms the event loop is responsible for handling simply tasks like
+executing callbacks and network i/o, 
+while the thread pool is for more heavy work like file access or compression.
+Libuv is completely written in C++
+V8 engine is written in JavaScript and C++
+Node.js ties all the libraries together no matter if they are written in C++ or JavaScript.
+And gives the develpers access to their functions in pure JavaScript.
+It provides a nice layer of abstraction in order to make our lives easier.
+For example file system features of the node.jscomes from the libuv
+instead of messing with C++ to write and read files we use JavaScript.
+
+Node.js also relies on http-parser for parsing http
+c-ares for DNS request stuff
+OpenSSL for cryptography
+zlib for compression
+
+
+########PROCESSES, THREADS, AND THE THREAD POOL
+
+When we use nodejs on a computer it means that there is a
+node process running on that computer.
+A process is just a program in execution (Instance of a program in execution on a computer)
+
+#####################IMPORTANT##################
+Instance of a program in execution on a computer
+In the context of POSIX-oriented operating systems, the term "(program) instance" typically refers to any executing process instantiated from that program (via system calls, e.g. fork() and exec()); that is, each executing process in the OS is an instance of some program which it has been instantiated from.[2]
+#####################IMPORTANT##################
+
+
+Node.js runs in a single thread (thread is a sequence of instrucitons)
+Because node.js run on a single thread it makes it easy to block node applications. 
+You need be very careful about not blocking that thread.
+### WHEN A PROGRAM IS INITIALIZED ###
+All the top-level code is executed.
+All the modules the app needs are required.
+All the callbacks are registered.
+After all of this the event loop finally starts running.
+Event loop is where most of the work is done.
+It is the heart of the node.js architecture.
+But some task are too expensive to be executed in the event loop
+because they would block the single thread.
+Thats were the thread pool comes in. 
+Just like the event loop it is provided to the node.js by the
+libuv library.
+Thread pool gives us 4 additional threads (we can configure it up to 128 threads)
+that are completely seperate from the main single thread.
+The event loop can automaticly offload heaavy tasks to the thread pool.
+All this happens automaticly behind the scenes, it is not us developers who
+decide what goes into the thread pool and what doesn't.
+Expensive tasks are operations dealing with: files, cryptography,
+compression, DNS lookups
+
+
+############## EVENT LOOP #######################
+
+Event loop is the heart of the node application.
+All code except top level code is run using the event loop.
+Some parts of the code might be offloaded to the thread pool
+but it is the event loop who does the offloading.
+Node.js is built around callback functions, functions that are called
+as soon as some work is finished.
+It works this way becasue node uses an event driven architecture.
+#########################
+Event driven architecture:
+-Events are emitted
+-Event loop picks them up
+-Callbacks are called
+#########################
+Things like our application recieving http requests, timers expiring
+or a file finising to read emit events as soon as they are done with their work.
+The event loop will pick up these events and call the callback functions that are
+associated with each event.
+Event loop recieves events each time something important happens, and calls the necessary callbacks.
+In summary event loop does the orchestration which means it recieves events,
+calls their callback functions, and offloads the mnore expensive tasks tothe thread pool.
+
+##### THE ORDER CALLBACK ARE EXECUTED ########
+Event loop has multiple phases and each phase has its own seperate callback queue.
+We will take a look into the 4 most important phases
+There are one or two other phases used internally by the nodejs
+but these are not that important for us(at least yet).
+
+1. First phase takes care of the callbacks of expired timers.
+If there are callback functions from timers that just expired
+these are the first ones to be proccess by the event loop.
+If a timer expires later, during the time when one of the other
+phases are being proccessed then the callback of that timer will only
+be called as soon as the the event loop comes back to this first phase.
+Event loop works the same for other callback queues as well.
+If a callback queues event is emitted but the event loop is in a later phase
+then that callback must wait for the event loop to come back.
+
+2.I/O Polling and Execution of I/OP Callbacks
+Polling means looking for I/O events that are ready to be proccessed
+and putting them into the callback queue.
+In the context of a node application I/O mainly means
+networking and file access.
+So most of our code is executed in this phase because in a typical node app
+bulk of what we need to do is related to networking and file accessing.
+
+3. setImmediate Callbacks
+setImmediate is a special type of timer that we can use to process callbacks immediately
+after the I/O pollin and execution phase, which can be important in some advanced use cases.
+
+4. Close Callbacks
+In this phase all close events are proccessed.
+For example when a web server or a seb socket shuts down.
+
+Besides these 4 queues there are 2 more queues
+These are:
+-Next tick queue
+-Other microtasks queue
+If there are any callbacks in one of these two queues to be proccessed
+They will be executed right after the CURRENT PHASE of the event loop finishes
+instead of waiting fot the entire loop tp finish.
+So in other wors after each of these 4 phases if there are any callbacks
+in these 2 special queues they will be executed right away.
+
+Other microtasks queue is mainly for promises.
+
+We can use the next tick queue when we really really need to execute a certain callback
+right after the current event loop phase.
+The difference between next tick and setImmediate is, setImmediate only runs after the I/O polling phase
+Both the setImmediate and nex tick are for advanced use cases.
+
+#One tick is one cylce of the loop
+
+After we finish a tick nodejs looks if there are any timers or I/O tasks
+If there are none than it exits the application.
+If there are any timers or I/O tasks it will go to the next tick.
+We saw this before, when we didn't had a server node app closed after the tasks were done.
+But with the addition of the http server node kept running
+because the server kept listening for events.
+Also when we are reading or writing files in the background that is also an I/O task
+it makes sense that the app doesn't quit while working on the file.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+
+Keep these in mind to not block the event loop
+
+
+1. Don't use the sync verisons of functions in the
+fs, crypto, and zlib modules in your callback funtions.
+You can use them on the top level code
+because top level code is executed before the vent loop even starts.
+
+2. Don't perform complex calculations (e.x. loops inside loops)
+
+3. Be careful with large JSON objects
+At some point it can start to take a long time to parse or stringify JSON.
+
+4. Don't use complex regular expressions.(e.x. nested quantifiers.)
+They can take longer than expected.
+
+There are solutions to these problems like
+manually uploading to the thread pool, child processes, workers
+
+
+
+
+
+
+
+
+

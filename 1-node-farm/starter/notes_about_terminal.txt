@@ -1,0 +1,18 @@
+we can write node to the console and it opens the REPL(Read-eval-print loop)
+_ is reserved for previous value, using _ we can do this:
+5+5 would give 10 as as result
+_+10 would give 20 as a result
+
+With REPL we can write JavaScript code and execute it in the terminal
+
+To exit the REPL we can use .exit command or use CTRL+D
+
+To clear the console use CTRL + L
+
+If you hit TAB twice we can see all the global variables taht are available.
+There are standart variables like Array and Date etc,
+but also node specific ones like https, fs or crypto.
+These are node modules.
+
+We can also write any global variable and add a dot at the end(e.x. String.)
+and press TAB twice to get all the methods and properties available to us
