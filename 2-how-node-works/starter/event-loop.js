@@ -8,18 +8,46 @@
 const fs = require("fs");
 const crypto = require("crypto");
 
+// For timing the amount of time that the processes take
 const start = Date.now();
+
+// !Changing the default thread pool size
+// unfortunately we can't change the threal pool with the code below
+// UV_THREADPOOL_SIZE=1
+// on Windows. It works on macOS and linux
+// To change it on windows we need to change it on the command line before running the script
+// We can do it like this
+// set UV_THREADPOOL_SIZE=1 & node event-loop.js
+// or make a script with these instructions, add it to the package.json
+// and run it using the npm
+// "scripts": {
+//   "start": "set UV_THREADPOOL_SIZE=1 & node event-loop.js"
+// },
 
 // * First the top-level code is executed
 // * But the order of the other 3 operations
-// *are not determined by the event loop
+// * are not determined by the event loop
 // * Because they are not running in the event loop just yet.
 // For that we need to move the setTimeout and the setImmediate inside a callback function
 setTimeout(() => console.log("Timer 1 finished"), 0);
 setImmediate(() => console.log("Immediate 1 finished"));
+let a = 0;
+for (let i = 0; i < 10000000000; i++) {
+  a++;
+}
+console.log(a);
+
+console.log(Date.now() - start, "for loop 1 finished");
 
 fs.readFile("./test-file.txt", "utf-8", () => {
-  console.log("I/O finished");
+  console.log(Date.now() - start, "file read finished");
+  let a = 0;
+  for (let i = 0; i < 10000000000; i++) {
+    a++;
+  }
+  console.log(a);
+  console.log(Date.now() - start, "for loop 2 finished");
+
   console.log("---------- Running in the event loop --------------");
 
   // *We have put the setTimeout and the setImmediate inside this callback
@@ -40,10 +68,14 @@ fs.readFile("./test-file.txt", "utf-8", () => {
   process.nextTick(() => console.log("process.nextTick"));
 
   // *Thread Pool
-  // By default the size of the thread pool is 4 
+  // By default the size of the thread pool is 4
   // There are 4 threads doing computation at the same time
   // Thats why these 4 took aproximately the same time
   // and happened basically at the same time.
+
+  // *The sync version blocks the event loop
+  crypto.pbkdf2Sync("password", "salt", 100000, 1024, "sha512");
+  console.log(Date.now() - start, "password encrypted");
 
   crypto.pbkdf2("password", "salt", 100000, 1024, "sha512", () => {
     console.log(Date.now() - start, "password encrypted");
@@ -57,6 +89,13 @@ fs.readFile("./test-file.txt", "utf-8", () => {
   crypto.pbkdf2("password", "salt", 100000, 1024, "sha512", () => {
     console.log(Date.now() - start, "password encrypted");
   });
+
+  let b = 0;
+  for (let i = 0; i < 10000000000; i++) {
+    b++;
+  }
+  console.log(b);
+  console.log(Date.now() - start, "for loop 3 finished");
 });
 
 console.log("Hello from the top-level code");
