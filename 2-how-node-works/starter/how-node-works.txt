@@ -129,8 +129,8 @@ These are:
 -Other microtasks queue
 If there are any callbacks in one of these two queues to be proccessed
 They will be executed right after the CURRENT PHASE of the event loop finishes
-instead of waiting fot the entire loop tp finish.
-So in other wors after each of these 4 phases if there are any callbacks
+instead of waiting fot the entire loop to finish.
+So in other words: after each of these 4 phases, if there are any callbacks
 in these 2 special queues they will be executed right away.
 
 Other microtasks queue is mainly for promises.
