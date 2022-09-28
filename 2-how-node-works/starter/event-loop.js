@@ -4,7 +4,7 @@
 // of the different callbacks queues all at the same time.
 // That situation happens when a lot of request are
 // coming into your app, but it is really hard to reolicate locally.
-
+const http = require("http");
 const fs = require("fs");
 const crypto = require("crypto");
 
@@ -111,3 +111,62 @@ console.log("Hello from the top-level code");
 // be executed right away after the pollin phase even befeor the expired timer.
 // In this example the timer expires right away but the event loop pauses
 // in the polling phase so that the setImmediate callback is executed first.
+
+// !!!!!!!!!!!!IMPORTANT!!!!!!!!!!
+// If the callback of an async function has synchronous code it will execute as synchronous.
+// If there is an asynch function after the sync code it will have to
+// wait for the sync code to finish. To avoid this put the async function above the synch code,
+// this way async code still needs to waits the synch code to finish to output it's response
+// but it will be running in the background as the sync code runs.
+// So instead of starting to execute after the sync code finishes,
+// it will start before the sync code
+// but will wait the sync code to finish to return the result of it's callback function
+
+// So when the callback function is put in the execution stack it acts like a top level code
+// All the code in it will be run synchronously, if there is an async code in it,
+// event loop will put it in the thread pool and when it finishes it's operation
+// it will call the callback function of the async code to the
+// execution stack to be run if the execution stack is empty;
+// if it isn't empty it will wait until the execution stacks empty then put it in the execution stack.
+
+// ?Event Driven Architecture
+// The modules we used lşke the http,fs,crypto, timer are buşlt around an event driven architecture.
+// We can use this architecture to our own advanteage
+// In node therea re certain objects called event emitters that emit events
+// as soon as somethin important happes in the app like a request hitting a server
+// timer expiring or a files finishing to read.
+// These events then can be picked up by event listeners that we developers set up
+// which will fire callback functions that are attached to each listener.
+//  let' take a look at how node uses the event driven architecture to handle
+// server requests.
+const server = http.createServer();
+server.on("request", (req, res) => {
+  console.log("Request recieved");
+  res.end("Reques received");
+});
+// This implemantation is a bit different than the one we did before
+// but it works the exact same way.
+// server.on method is actually how we create a listener
+// In this case a listener for the reques event
+// When we have our server running and a new request is made
+// server acts as an emitter. Server will emit an event each time
+// a request hits the server.
+// Since we already have a listener set up for this event
+// the callback function we attached to this listener will be called.
+// It works this way because behind the scenes server is
+// actually an instance of the nodejs EventEmitter class.
+// So it inherits all this event emitting and listening logic from
+// the EventEmitter class
+// *This event emitter logic is called the observer patter in the JavaScript programming.
+// The idea is that there is an observer which is the event listener in this case
+// which keeps observing the subject that will eventally emit the
+// event that the listener is waiting for.
+// The opposite of this pattern is simply functions calling other functions.
+// The observer patterns was designed to react rather than to call.
+// The huge benefit of using this patters is that everything is de-copuled.
+// For example we don't have functions from the files ystem module calling
+// functions from the http module because that would be a huge mess
+// Instead these modules are nicely de-coupled and self contained, each emitting events
+// other funcitons -even if they come from other modules- can respond to.
+// Also using an event driven architecture makes it way more straightforward to
+//react multiple times to the same event. ALl we have to do is to set up multiple listeners.
