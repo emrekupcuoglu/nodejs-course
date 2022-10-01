@@ -5,6 +5,7 @@
 // For example when we read a file using streams
 // we read part of the data do something with it
 // then free our memory and repeat this until the entire files has been processed.
+
 // Netflix and youtube are called streaming companies because they use the same principle
 //Instead of waiting for the whole video to load the processing is done piece by piece
 // or in chunks so you can start watching even before the entire files has finish downloading.
@@ -170,3 +171,5 @@ server.listen(8000, "127.0.0.1", () => {
 //     }
 //   });
 // });
+
+
