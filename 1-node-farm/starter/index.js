@@ -101,7 +101,7 @@ console.log(slugs);
 // This callback funtion has access to two very important and fundamental variables
 //The request and the respond variable
 const server = http.createServer((req, res) => {
-  // We used res.end to send a very simple res to the client
+  // We used res.end to send a very simple response to the client
 
   // We need to pass in true to parse the query into an object
   // query is the part of the url after "?"
@@ -228,25 +228,25 @@ server.listen(8000, "127.0.0.1", () => {
 });
 
 // Summary: We created a server and passed in a callback
-// that is executed each time a request hits the sesrver.
+// that is executed each time a request hits the server.
 // Than we started listening for incoming requests on local host port 8000
 // Once we had all this running we did the request by hitting the url
-// Than under the hood of nodejs and event was fired
+// Than under the hood of node.js and event was fired
 // and that event caused the callback function to be executed
-// An as a result of that calback function we got the
-// "Hello form the server" response
+// And as a result of that calback function we got the
+// "Hello from the server" response
 
 // Routing
 // Routing bsically means implementing different actions for different urls
 // Routing can became very complicated in a big real world application
-// In that we use a tool like express.
+// In a real world application we use a tool like express.
 // We are going to do that in the next big project
-// We will use expresss to do all of that in that project
-// Bu as we are starting to learn node we awill lear
-// how to do everything from scratch withou any dependencies
+// We will use express to do all of that in that project
+// But as we are starting to learn node we will learn
+// how to do everything from scratch without any dependencies
 
 // First step to routing is to analyze the url
-// We use a built in node module for that whcih is called url
+// We use a built in node module for that which is called url
 
 
 // API

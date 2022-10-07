@@ -14,3 +14,4 @@ module.exports = class {
     return a / b;
   }
 };
+

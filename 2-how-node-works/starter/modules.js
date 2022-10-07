@@ -21,6 +21,29 @@
 
 // We can import the exported value and save it into a variable
 // We can give it any name we want
-const C = require(`./test-module-1`);
+
+// modulel.exports
+const C = require("./test-module-1");
 const calc1 = new C();
 console.log(calc1.add(2, 5));
+
+// exports
+// Because we are importing an object we use destructuring
+const calc2 = require("./test-module-2");
+const { add, multiply, divide } = require("./test-module-2");
+console.log(multiply(2, 5));
+
+
+// Caching
+// We call this function right away without saving it into a variable/
+// Because of caching the test-module-3 will only run once and return the cached result when called again/
+// Because the code inside the test-module-3 is only run once
+// We get the "hello from the module " only once
+// But we get the "Log this beautiful text" three times
+// Because the function we are exporting from the test-module-3
+// logs to the console "Log this beautiful text"
+require(`./test-module-3`)();
+require(`./test-module-3`)();
+require(`./test-module-3`)();
+
+
