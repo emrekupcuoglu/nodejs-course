@@ -1,11 +1,17 @@
-const fs = require("fs");
 const express = require("express");
+const morgan = require("morgan");
 const exp = require("constants");
 const { reverse } = require("dns");
+const { get } = require("http");
 // Express module return a funciton and we run that function
 // and save its results to a variable caled app
 const app = express();
 
+
+const tourRouter = require("./routes/tourRoutes");
+const userRouter = require("./routes/userRoutes");
+
+// 1. MIDDLEWARES
 // middleware
 // A middleware is basically a function that can modify request data
 // It is callled middleware because it stands in the middle of the request and response.
@@ -14,6 +20,21 @@ const app = express();
 // The data from the body is added to the request object.
 // We need to use app.use to use middleware
 app.use(express.json());
+
+// We use this middleware for serving static files
+// like images, html, etc.
+// When it can not found a ropute specified in any of our routes
+// it will look into the public folder
+// And with this we don''t have to specify the public folder in the url as well
+// We can just write http://127.0.0.1:3000/overview.html
+// instead of http://127.0.0.1:3000/public/overview.html
+app.use(express.static(`${__dirname}/public`));
+
+// *3rd party middleware
+// We are using the environment vraible to only use this logging middleware
+// when we are in the development environment
+if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
+
 
 // *Creating our own middleware
 // We need to the app.use to use the middleware
@@ -223,151 +244,18 @@ const JSEND =
 // We do this because json() method of express.js automaticly turns JAvaScript object into JSON
 // By calling the JSON.stringify() method
 
-const toursData = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`));
 
-const getAllTours = (req, res) => {
-  console.log(req.requestTime);
-  res.status(200).json({
-    status: "success",
-    requestedAt: req.requestTime,
-    // results is not a part of the JSEND specification but it is nice to bea able to see the number of results on the client side 
-    results: toursData.length,
-    data: {
-      // name of this property is tours because the name of the API end point is tours
-      tours: toursData
+// !To use tourRouter we have to add it to our middleware stack
+// Because tourRouter is a real middleware
 
-    }
-  });
-};
-
-const getTour = (req, res) => {
-  // req.params are where all the parameters of (variables) we define here are stored
-  console.log(req.params);
-  const id = Number(req.params.id);
-  const tour = toursData.find(el => el.id === id);
+// First we specify the route which we want to use this router(middleware)
+// Then the function, which is the router in this case, we want to be executed
+// We have basically created a sub application
+// This process is called mounting the router
+// We are mounting the router on a new route
+app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/users", userRouter);
 
 
-  if (!tour) return res.status(404).json({ status: "Fail", message: "Invalid ID" });
-
-  res.status(200).json({
-    status: "Success",
-    data: {
-      tour
-    }
-  });
-};
-
-const createTour = (req, res) => {
-
-  const newID = toursData[toursData.length - 1] + 1;
-  // newTour is the req.body + the newID 
-  // We can use Object.assign for this
-  const newTour = Object.assign({ id: newID }, req.body);
-  toursData.push(newTour);
-  // !When we write to the file it shouldn't appear when we try to acces it with a get method
-  // !But it works because when we make a cahgne to the tours-simple.json file(manually or by an API)
-  // !It save and restarts our server because of nodemon
-
-  fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(toursData), err => {
-    // 201 stands for created
-    res.status(201).json({
-      status: "succes",
-      data: {
-        tour: newTour
-      }
-    });
-  });
-
-  // We always have to send back somethingin order to finish the
-  // so called request - response cycle.
-  // res.send("Done");
-
-};
-
-const updateTour = (req, res) => {
-  // We will not implement this here
-  // Will do that later when we work with a database instead of files
-  res.status(200).json({
-    status: "Success",
-    data: {
-      tour: "<Updated Tour>"
-    }
-  });
-};
-
-const deleteTour = (req, res) => {
-  // We will not implement this here
-  // Will do that later when we work with a database instead of files
-
-  // 204 is code for no content
-  // We usually do not send any data back
-  // we usually only send null
-  res.status(204).json({
-    status: "Success",
-    data: {
-      tour: null
-    }
-  });
-
-};
-
-// app.get("/api/v1/tours", getAllTours);
-
-// We use a colon to create an end point that can accept different values
-// We essentially create a variable
-// To make a parameter optional we can add a question mark after it
-// app.get("/api/v1/tours/:id", getTour);
-
-// We use the post method now because that is the kind of request we want to handle
-// With the post request we can send data from client to the server
-// This data is ideally available on the request
-// THerequest object holds all the data about the request that was done
-// If that requests contains some data that was sent tahtn taht data should be on the request object
-// Out of the box express.js doesn't put that body data on the request.
-// In order to have that data available we have to use a middleware
-// We'll go into more detail about middleware but for now we will use a simple middleware
-// app.post("/api/v1/tours", createTour);
-// app.patch("/api/v1/tours/:id", updateTour);
-// app.delete("/api/v1/tours/:id", deleteTour);
-
-// *If we needed to change the version or the resource name
-// * we would need to change it in everywhere
-// *We can use the route() mothod to simplify this
-// *Code below is the same as:
-// app.get("/api/v1/tours", getAllTours);
-// But with the route method we can chain the post method as well
-// because they have the same API end point 
-app
-  .route("/api/v1/tours")
-  .get(getAllTours)
-  .post(createTour);
-
-// *Info About Middleware
-// If we put a middleware here and send a get or post request to the
-// "/api/v1/tours" middleware will not exucuted
-// Because middleware comes after the route handler.
-// This happens because route handlers are middleware as well.
-// And the route handler ends the request - response cycle.
-// By sending a result with the res.json() we end the cycle.
-// So the next middleware in the stack will not be called because the cycle is already is finished.
-// app.use((req, res, next) => {
-//   console.log("Hello from the middleware 2");
-//   next();
-// });
-app
-  .route("/api/v1/tours/:id")
-  .get(getTour)
-  .patch(updateTour)
-  .delete(deleteTour);
-
-const port = 3000;
-app.listen(port, () => {
-  console.log("app running on port 3000");
-})
-
-
-
-
-
-
+module.exports = app
 

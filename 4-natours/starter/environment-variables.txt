@@ -1,0 +1,25 @@
+node.js or express.js apps can run in different environments.
+The most important ones are the development environment
+and the production environment.
+Depending on the environment we might use different databases, we might
+turn logging on or off, we might turn debugging on or off and all kinds
+of different settings that might change depending on the environment we are in.
+
+By default express.js sets the environment to development.
+If we want to set an environment variable we need to prepend it before the nodemon server.js command
+NODE_ENV=development nodemon server.js
+Many packages on npm that we use for express development depend on this variable
+We should to change this variable to production when we are going to deploy it.
+
+We can do a lot more wtih environment variables.
+We usually use environment variables like configuration settings for our application
+Whenever our app needs configuration for stuff that might change
+based on the environment that it is running we use environmetn variables.
+For example we might use different databases for development and testing
+so we can define a variable for each and activate the right database according to the environment.
+Also we could set sensitive data like passwords and usernames using environment variables.
+
+It is not really practical to define all thses variables in the command where we start the application.
+Instead we create a configuration file called config.env in this case
+
+

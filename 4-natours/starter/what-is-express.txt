@@ -8,3 +8,12 @@ This allows us to write node.js applications so much faster because
 we don't have to re-invent the wheel.
 
 Express makes it easier to organize our application into the MVC architecture.
+
+In express.js many packages depend on a special variable called NODE_ENV
+It is a variable that should define whether we are in development or in production.
+However express.js doesn't define this variable and we have to do it manually
+The easiest way to do it is from the terminal
+
+The standart for connectiong the variables in the .env file with our code
+is using the dotenv packages
+npm i dotenv to install it

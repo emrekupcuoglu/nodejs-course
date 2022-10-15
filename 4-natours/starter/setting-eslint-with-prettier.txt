@@ -1,0 +1,16 @@
+First install eslint and prettier extensions
+Then run this command:
+npm i eslint prettier eslint-config-prettier eslint-plugin-prettier eslint-config-airbnb eslint-plugin-import eslint-plugin-jsx-a11y eslint-plugin-react eslint-plugin-react eslint-plugin-node --save-dev
+
+eslint-config-prettier is to keep prettier as the formatter and not eslint eslint-config-airbnb eslint-plugin-node
+eslint-plugin-prettier is for using eslint's formatting error detecting features with prettier
+eslint-config-airbnb is a style guide used by air bnb
+eslint-plugin-import needed for air bnb style guide to work
+eslint-plugin-jsx-a11y needed for air bnb style guide to work
+eslint-plugin-react needed for air bnb style guide to work
+eslint-plugin-react needed for air bnb style guide to work
+eslint-plugin-node this will add a couple of specific rules only for node.js
+
+Then we need config files for prettier and eslint
+It is .prettierrc for prettier
+and .eslintrc.json for eslint

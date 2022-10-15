@@ -1,0 +1,87 @@
+Use the "use {name of the databse}" to switch to a database and if the database doesn't exist create one 
+We first need to create a collection before inserting a document
+to do that we write db which stands for the current database
+then we specify the name fo the colleciton
+then we use the insertOne function on that
+If there is not a collection with that name it will create a new collection
+We pass in a BSON which is similiar to a JSON
+Like this:
+Note: quotes on keys are optional
+db.tours.insertOne({name:"Forest Hiker", price:297, rating:4.7})
+
+To check the the  document we have just created use this
+db.tours.find()
+Notice how mongoDB automaticly created a unique id
+and notice how the document is just a regular JSON object
+
+show dbs command shows all databases
+show collection command shows all collecitons inside the database
+
+to add multiple documents at the same time we use the insertMany() method
+insertMany() takes an array of arguments and the array contains the documents we want to add.
+For example: db.tours.insertMany([{name:"Sea Explorer", price:497, rating: 4.8},{name:"The Snon Adventure", price:997, rating: 4.9, difficulty:easy}])
+
+QUERY OPERATORS
+If we want to search for a tour with a name we already know
+we can use the find method with a filter object like this:
+db.tours.find({name: "Forest Hiker"})
+IF we want to search for tours with a price lower than 500
+We can use the less than equal (<=) operator
+We creates a new object and put $lte and
+set that to the price we want it to be less then like this:
+db.tours.find({price:{$lte:500}})
+
+USING MULTIPLE QUERY OPERATORS AT THE SAME TIME
+
+AND QUERY
+All we have to do to query based on multiple fields
+is to specify it inside the filter object like this:
+db.tours.find({price:{$lt:500}, rating:{$gte:4.8}}) 
+
+OR QUERY
+This query return if the price is lower than 500 or 
+if the ratings is greate than or equal to 4.8
+db.tours.find({$or:[{price:{$lt:500}, {rating:{$gte:4.8}}}]})
+
+PROJECTION
+Besides the filter obejct we can also pass in a projection object
+We specify the field we want to be shown inside the projection object
+and only that field is shown the other fields are not shown
+So if we do this:
+db.tours.find({$or:[{price:{$lt:500}, {rating:{$gte:4.8}}}]}, {name:1})
+Only the name field will be shown other fields will nbot be shown
+
+UPDATING DOCUMENTS
+We use the updateOne() method to update documents
+First we need to select which doument we want to update
+and second we need to pass in the data that should be updated
+First argument is a filter object we basically query first
+Second argument is an object which we use the set operator in it
+db.tours.updateOne({name: "The Snow Adventure"}, {$set:{price:597}}) 
+If there were multiple documents that matched the query,
+because we have used updateOne(), only the first document that matched would of been changed.
+To update multiple document we can use the updateMany() method.
+
+REPLACING DOCUMENTS
+With updateOne() and updateMany() we have updated documents partially
+To completely change a document we can use replaceOne() or replaceMany()
+It is similiar to the update method
+We pass in the search query and the new data that you would want to put in the document
+
+DELETING DOCUMENTS
+We can delete tours using the deleteOne() and the deleteMany() methods
+We specify a searh query and then delete the items that match it 
+db.tours.deleteMany({rating:{$lt:4.8}})
+
+If you want to delete all the documents in a colleciton you would do this
+deleteMany({})
+
+ATLAS CLOUD INTEGRATION
+We have gone through the steps of creating a remote database
+There are lots of important things to keep in mind
+you can find these in the lecture 81
+One of the important thing is to whitelisting IP adresses
+If you want to access this database fro another comnputer 
+you need to whitelist that computer's IP address 
+Since we are not dealing with sensitive data we can whitelist all IP addresses in the world
+We will still need our username and password
