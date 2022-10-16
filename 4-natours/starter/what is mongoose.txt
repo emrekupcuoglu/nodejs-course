@@ -1,0 +1,21 @@
+MOngoose is an Object Data Modeling (ODM) library
+for mongoDB and Node.js, a higher level of abstraction.
+It is a bit like Express.js
+Express.js is an abstraction over Node.js
+Mongoose is an abstraction over mongoDB driver
+An ODM library is a way for us to write JavaScript
+that will then interact with a database.
+We could use a regular mongoDB driver to access our database
+and it would work just fine.
+But instead we use mongoose because it gives us a lot more
+functionality oout of the box, aloowing for simpler and
+faster development.
+Some of the features mongoose gives us are:
+Schemas to model data and releationships, easy data validation,
+simple query API, middleware, etc.
+
+Mongoose Schema: where we model our data, by describing the structure of our data,
+set default values, and validation.
+
+Mongoose Model: We take the schema and make a model out of it.
+Model is a wrapper for the schema, providing an interface to the database for CRUD operations
