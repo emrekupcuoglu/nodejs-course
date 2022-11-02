@@ -9,8 +9,8 @@ To exit the REPL we can use .exit command or use CTRL+D
 
 To clear the console use CTRL + L
 
-If you hit TAB twice we can see all the global variables taht are available.
-There are standart variables like Array and Date etc,
+If you hit TAB twice we can see all the global variables that are available.
+There are standard variables like Array and Date etc,
 but also node specific ones like https, fs or crypto.
 These are node modules.
 

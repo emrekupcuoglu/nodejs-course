@@ -1,12 +1,12 @@
 //? How requiring modules really work?
-//Each JavaScript file is treated as a seperate module
+//Each JavaScript file is treated as a separate module
 //Node.js uses the CommonJS module system: require(), exports or module.exports
 //ES module system is used in browsers (and in node to some extent)
 //
 //?What happens When We Require() a Module?
 //As a very broad overview following steps executed behind the scenes
-//First Path to the requierd module is resolved and the file is loaded
-//then a prcoess called wrapping happens
+//First Path to the required module is resolved and the file is loaded
+//then a process called wrapping happens
 //after that module code is executed
 //and the module exports are returned
 //and finally the entire module gets cached
@@ -14,7 +14,7 @@
 //* How does node know which file to load when we require module
 //Because we can load 3 different kinds of modules
 //Core modules, our own modules, and 3rd party modules.
-//This prcoess is called as resolving the file path
+//This process is called as resolving the file path
 //* PATH RESOLVING: HOW NODE DECIDES WHICH MODULE TO LOAD
 //* 1. Start with core modules
 //* 2. If it begins with "./" or "../" => Try to load a developer module
@@ -32,23 +32,23 @@
 //into a special function which will give us a couple of special objects.
 //This step is where the magic happens.
 //It is here where we get the answer to the question
-//"Where does the require() funciton comes from, and why do we have access to it?"
+//"Where does the require() function comes from, and why do we have access to it?"
 //It is because the node.js takes the code of our module and puts it inside the
-//immediatly invoked function expression(IIFE) below
+//immediately invoked function expression(IIFE) below
 //(functions(exports, require, module, __filename, __dirname){
 // module code lives here
 // })
 //So node actually doesn't directly execute the code we write
 //but instead it executes the wrapper function that contain our code in it's body.
 //It also passes the exports, require, module ,__filename ,__dirname into it
-//Thats why in every module we automaticly have access to stuff like the require function.and the __dirname.
+//Thats why in every module we automatically have access to stuff like the require function.and the __dirname.
 //These are basically like global variables that are injected into each and every module
 //By doing this node achieves two very important things
 //* 1. Giving developers access to all these variables.
 //* 2. It keeps the top-level variables that we defined in our modules private
 // Scoped only to the current module instead of leaking everything into the global object.
 //Imagine we declared a variable x in one of our modules and then included an npm module
-//that also used a variable called x. Without this mechanism our own vairable would get overwritten
+//that also used a variable called x. Without this mechanism our own variable would get overwritten
 //and the entire app would not work.
 //Each module having it's private module is crucial
 //and it is achieved through this clever trick of wrapping our code into this special function.
@@ -56,9 +56,9 @@
 //Let's take a look at each object our module gets
 //require: function to require modules
 //module: reference to the current module and most importing when exporting data
-//exports: a reference to the module.exports, used toexport object from a module and most importing when exporting data
+//exports: a reference to the module.exports, used to export object from a module and most importing when exporting data
 //__filename: absolute path of the current module's file
-//__dirname: directory name of thecurrent module
+//__dirname: directory name of the current module
 //
 //* EXECUTION
 // The code in the wrapper function gets executed by the node runtime
@@ -88,5 +88,5 @@
 //Modules are cached after the first time they are loaded
 //This means that if you require the same module multiple times
 //you will always get the same result and the code in the modules
-//are only exeuted once in the first call.
+//are only executed once in the first call.
 //In the subsequent calls the result is simply retrieved from cache

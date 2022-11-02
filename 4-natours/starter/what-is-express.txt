@@ -1,5 +1,5 @@
 Express is a minimal node.js framework, which means it is built on top of node.js
-basically a a higler level of abstraction. It is the most popular node.js framework.
+basically a a higher level of abstraction. It is the most popular node.js framework.
 Behind the scenes express is written in 100% node.js code.
 
 Express contains a very robust set of features: complex routing,
@@ -14,6 +14,6 @@ It is a variable that should define whether we are in development or in producti
 However express.js doesn't define this variable and we have to do it manually
 The easiest way to do it is from the terminal
 
-The standart for connectiong the variables in the .env file with our code
+The standard for connecting the variables in the .env file with our code
 is using the dotenv packages
 npm i dotenv to install it

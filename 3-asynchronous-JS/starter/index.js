@@ -22,7 +22,6 @@ const { rejects } = require("assert");
 //   });
 // });
 
-
 // *Promise
 
 // fs.readFile(`${__dirname}/dog.txt`, "utf-8", (err, data) => {
@@ -43,14 +42,13 @@ const { rejects } = require("assert");
 //     .catch(err => console.log(err.message));
 // });
 
-
 // * Promisify the readFile and writeFile functions
 
-const readFilePromise = file => {
+const readFilePromise = (file) => {
   return new Promise((resolve, reject) => {
     fs.readFile(file, "utf-8", (err, data) => {
       // If there is an error we will reject the promise
-      // whatever we pass into the reject function will be the 
+      // whatever we pass into the reject function will be the
       // error that is later available in the catch method
       if (err) reject("file not found");
       // Whatever we pass into the resolve function
@@ -62,15 +60,14 @@ const readFilePromise = file => {
 
 const writeFilePromise = (file, data) => {
   return new Promise((resolve, reject) => {
-    fs.writeFile(`${__dirname}/dog-img.txt`, data, err => {
+    fs.writeFile(`${__dirname}/dog-img.txt`, data, (err) => {
       if (err) reject(err);
       resolve("Success");
     });
-
   });
 };
 
-// *Chaning promises
+// *Chaining promises
 
 // readFilePromise(`${__dirname}/dog.txt`)
 //   .then(data => {
@@ -82,7 +79,6 @@ const writeFilePromise = (file, data) => {
 //   .then(() => console.log("Random dog image saved to file"))
 //   .catch(err => console.log(err.message));
 
-
 const start = Date.now();
 
 // *Async/await
@@ -92,7 +88,6 @@ const getDog = async function () {
 
     let y = 0;
     for (let i = 0; i < 10; i++) {
-
       for (let j = 0; j < 100000000; j++) {
         y++;
       }
@@ -101,20 +96,19 @@ const getDog = async function () {
     console.log("y finished", Date.now() - start);
 
     const breed = await readFilePromise(`${__dirname}/dog.atxt`);
-    const data = await superagent.get(`https://dog.ceo/api/breed/${breed}/images/random`);
+    const data = await superagent.get(
+      `https://dog.ceo/api/breed/${breed}/images/random`
+    );
     await writeFilePromise(`${__dirname}/dog-img.txt`, data.body.message);
     console.log(" Async/await: Random dog image saved to file");
-  }
-
-  catch (err) {
+  } catch (err) {
     console.log(err);
-    throw (err);
+    throw err;
   }
   // When we return a value from an async function we return a promise instead of the value
 
   let x = 0;
   for (let i = 0; i < 10; i++) {
-
     for (let j = 0; j < 100000000; j++) {
       x++;
     }
@@ -125,25 +119,22 @@ const getDog = async function () {
   let z = 0;
 
   for (let i = 0; i < 10; i++) {
-
     for (let j = 0; j < 100000000; j++) {
       z++;
     }
 
     console.log("z", z, Date.now() - start);
-
   }
 
   console.log("z finished", Date.now() - start);
 
   return "Success";
-
 };
 console.log("1");
-// This throws an unhandled promise rejection error 
+// This throws an unhandled promise rejection error
 // This happens because we are not using the catch method with it
 // This is also useless because we can't use the result without the then() method
-// So thening tihs is the way to go in a real app
+// So thening this is the way to go in a real app
 // const dog = getDog();
 // When we log this into the console we get
 // Promise{pending} because when we return something
@@ -151,56 +142,46 @@ console.log("1");
 // Instead of saving the result into a variable we can use the then method to get the result
 // Even if we have an error inside the async function
 // the promise returning from there will be marked as successful
-// ! We are using async/await and promises togerther this is not ideal
+// ! We are using async/await and promises together this is not ideal
 // ! We have turned this into an async function below
 getDog()
-  .then(x => console.log(x))
-  .catch(err => {
+  .then((x) => console.log(x))
+  .catch((err) => {
     console.log("Error 💥");
   });
 // We can not catch it using the catch method as well
-// If we need to mark it asrejected we need to throw the error inside the async code
-
+// If we need to mark it as rejected we need to throw the error inside the async code
 
 // console.log("dog", dog);
 console.log("3");
-let a = 0, b = 0;
+let a = 0,
+  b = 0;
 for (let i = 0; i < 10; i++) {
-
   for (let j = 0; j < 100000000; j++) {
     a++;
   }
 
   console.log("a", a, Date.now() - start);
-
 }
 console.log("a finished", Date.now() - start);
 
 for (let i = 0; i < 10; i++) {
-
   for (let j = 0; j < 100000000; j++) {
     b++;
   }
 
   console.log("b", b, Date.now() - start);
-
 }
 console.log("b finished", Date.now() - start);
-
 
 // *IIFE
 
 (async () => {
   try {
-
     const x = await getDog();
     console.log(x);
-
-
-  }
-  catch (err) {
+  } catch (err) {
     console.log("Error from IIFE");
-
   }
 })();
 
@@ -209,15 +190,19 @@ console.log("b finished", Date.now() - start);
 const getDog2 = async function () {
   const breed = await readFilePromise(`${__dirname}/dog.txt`);
 
-  const pro1 = superagent.get(`https://dog.ceo/api/breed/${breed}/images/random`);
-  const pro2 = superagent.get(`https://dog.ceo/api/breed/${breed}/images/random`);
-  const pro3 = superagent.get(`https://dog.ceo/api/breed/${breed}/images/random`);
+  const pro1 = superagent.get(
+    `https://dog.ceo/api/breed/${breed}/images/random`
+  );
+  const pro2 = superagent.get(
+    `https://dog.ceo/api/breed/${breed}/images/random`
+  );
+  const pro3 = superagent.get(
+    `https://dog.ceo/api/breed/${breed}/images/random`
+  );
   const all = await Promise.all([pro1, pro2, pro3]);
-  const imgs = all.map(img => img.body.message);
+  const imgs = all.map((img) => img.body.message);
   console.log(imgs);
   writeFilePromise(`${__dirname}/dog-img.txt`, imgs.join("\n"));
-
-
 
   console.log(" Async/await parallel: Random dog image saved to file");
 };

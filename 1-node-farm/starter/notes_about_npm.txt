@@ -2,15 +2,15 @@ Versioning and updating
 
 We can check the version of dependencies in out package.json file
 The first number (1 in the case of slugify) denotes a major release
-These releases can break the code(e.x the  function names can chagne or the parameters of the functions)
+These releases can break the code(e.x the  function names can change or the parameters of the functions)
 Second number denotes minor releases
 These usually introduce new features and are backwards compatible
-Third number denotes pathes these are usually for bug fixes
+Third number denotes patches these are usually for bug fixes
 
-The ^ symbol in front of the package name which npm specifiyes by default
-means that we accept only pathes and minor releases not major releases
+The ^ symbol in front of the package name which npm specifies by default
+means that we accept only patches and minor releases not major releases
 If we use the ~ symbol instead we only accept patch releases
-If we use the * symbol than we will accept all verisons
+If we use the * symbol than we will accept all versions
 
 
   "dependencies": {
@@ -18,7 +18,7 @@ If we use the * symbol than we will accept all verisons
   }
 
 
-We can check to see if there are outdated packages using the npm putdated command
+We can check to see if there are outdated packages using the npm outdated command
 That will give us a table with all the packages that are updated
 If there are no outdated packages than it will return nothing
 
@@ -32,7 +32,7 @@ npm install slugify@1.0.0
 If we run npm outdated now it will shows us that the slugify is outdated
 
 We can update using npm update slugify
-If we set the accepted updates to only pathces with the ~ symbol
+If we set the accepted updates to only patches with the ~ symbol
 than we only get the patches when we run npm update slugify
 ##############IMPORTANT###################
 This doesn't not update the package.json
@@ -53,11 +53,11 @@ Fortunately we can just use npm install to install all the dependencies
 
 #######IMPORTANT#########
 If we open the package-lock.json we get a list of all the versions
-of all the packages we are using and taht includes dependencies of our dependencies
+of all the packages we are using and that includes dependencies of our dependencies
 With the  package-lock.json file version numbers are locked in
 If you are sharing your code using github gitlab etc,
 always share your package.json and package-lock.json file
-because these files are neccessary to reconstruct the module folder
+because these files are necessary to reconstruct the module folder
 
 
 

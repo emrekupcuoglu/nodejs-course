@@ -1,5 +1,5 @@
 const express = require("express");
-const tourController = require("../controllers/tourController");
+const tourController = require("../controllers/tourControllerBeforeRefactor");
 
 // !Creating a router for each resource
 // We have created a new router and saved it to a variable.
@@ -24,8 +24,7 @@ const router = express.Router();
 // In the middleware function addition to he req, res, and next()
 // We also have access to a fourth argument
 // That argument is the value of the parameter in question
-// !We have refactored the code so the checkID method no longer exist
-// router.param("id", tourController.checkID);
+router.param("id", tourController.checkID);
 
 // 3. ROUTES
 // app.get("/api/v1/tours", getAllTours);
@@ -55,21 +54,6 @@ const router = express.Router();
 // But with the route method we can chain the post method as well
 // because they have the same API end point
 
-// ?ALIASING
-// Let's say that we have a route that is commonly visited
-// Like the top 54 and cheapest tours
-// We can create a route for that
-// This is called aliasing
-// We still want to get all the tours so we use that function
-// But we want to prefill some of the query fields
-// We can use a middleware for that
-router
-  .route("/top-5-cheap")
-  .get(tourController.aliasTopTours, tourController.getAllTours);
-
-router.route("/tour-stats").get(tourController.getTourStats);
-router.route("/monthly-plan/:year").get(tourController.getMonthlyPlan);
-
 router
   // Instead of:
   // .route("/api/v1/tours")
@@ -78,14 +62,9 @@ router
   // because the tourRouter already only runs on "/api/v1/tours"
   // So the root of the tourRouter is already "/api/v1/tours"
   .get(tourController.getAllTours)
-  .post(
-    // Here we have 2 middlewares in the same post() method
-    // Which is fine it runs them from right to left
-    // We don't need the checkBody anymore so we comment it out
-
-    // tourController.checkBody,
-    tourController.createTour
-  );
+  // Here we have 2 middlewares in the same post() method
+  // Which is fine it runs them from right to left
+  .post(tourController.checkBody, tourController.createTour);
 
 // app
 //   .route("/api/v1/tours")

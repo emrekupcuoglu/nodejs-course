@@ -1,12 +1,9 @@
 const express = require("express");
 const morgan = require("morgan");
-const exp = require("constants");
-const { reverse } = require("dns");
-const { get } = require("http");
-// Express module return a funciton and we run that function
-// and save its results to a variable caled app
-const app = express();
 
+// Express module return a function and we run that function
+// and save its results to a variable called app
+const app = express();
 
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
@@ -14,16 +11,16 @@ const userRouter = require("./routes/userRoutes");
 // 1. MIDDLEWARES
 // middleware
 // A middleware is basically a function that can modify request data
-// It is callled middleware because it stands in the middle of the request and response.
-// It is just a step that the request goes through while it is beaing processed.
-// The step the request goes through in this exapmle is really simple
+// It is called middleware because it stands in the middle of the request and response.
+// It is just a step that the request goes through while it is being processed.
+// The step the request goes through in this example is really simple
 // The data from the body is added to the request object.
 // We need to use app.use to use middleware
 app.use(express.json());
 
 // We use this middleware for serving static files
 // like images, html, etc.
-// When it can not found a ropute specified in any of our routes
+// When it can not found a route specified in any of our routes
 // it will look into the public folder
 // And with this we don''t have to specify the public folder in the url as well
 // We can just write http://127.0.0.1:3000/overview.html
@@ -31,10 +28,9 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
 // *3rd party middleware
-// We are using the environment vraible to only use this logging middleware
+// We are using the environment variable to only use this logging middleware
 // when we are in the development environment
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
-
 
 // *Creating our own middleware
 // We need to the app.use to use the middleware
@@ -51,7 +47,6 @@ app.use((req, res, next) => {
   // !The middleware we have created applies to every request because we didn't specify any route
   // !It will work on every request if it comes before route handlers
   // !If it comes after a route handler it will not work for that route
-
 });
 
 app.use((req, res, next) => {
@@ -59,14 +54,13 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Routing in Express
 // Routing is basically means to determine
 // how and application responds to a certain client request
 // The route is basically the url
 // and the http method, which is get in this case
 // app.get("/",
-// This is similiar to the native way
+// This is similar to the native way
 // but in express the req and the res objects have a lot more data and methods
 
 // (req, res) => {
@@ -74,8 +68,8 @@ app.use((req, res, next) => {
 // res.status(200).send("Hello from the server-side");
 
 // send method sends a string but instead of sending a string
-// we can send a json using the json method
-// And by using the json() it will automaticly set our Content-type to application/json
+// we can send JSON using the json method
+// And by using the json() it will automatically set our Content-type to application/json
 //   res.status(200).json({
 //     message: "Hello from the server-side",
 //     app: "Natours"
@@ -88,7 +82,6 @@ app.use((req, res, next) => {
 //     res.send("You can post to this URL");
 //   });
 
-
 // app.get("/api/v1/tours", (req, res) => {
 
 // });
@@ -100,30 +93,29 @@ app.use((req, res, next) => {
 
 // We use the postman to test this API
 
-
 // ?What is an API?
 // API stands for: Application Programming Interface
 // It is a piece of software that can be used by another piece of software
 //in order to allow applications to talk to each other.
 
-// We have talked aboutweb API before and thery are the most commonly used APIs
+// We have talked about web API before and they are the most commonly used APIs
 // But there are more than web APIs.
 // Application in API can be other things:
 // Node.js' fs or http APIs("node APIs")
 // Browser's DOM JavaScript API
 // With object-oriented programming when exposing methods to the public
 // we are creating an API
-// And many more API for different purpouses.
+// And many more API for different purposes.
 
 // *REST Architecture
-// REST stands for: Represantational State Transfer
+// REST stands for: Representational State Transfer
 // It is a way of building web APIs in a logical way making them easy to consume.
 // We build an API for ourselves or for others to consume.
 // We want to process of using the API as smooth as possible for the user.
 // To build RESTful APIs we need to follow a couple of principles
 
-// *1. Seperate API into logical resources
-// *2. Expose structured resource-baed URLs
+// *1. Separate API into logical resources
+// *2. Expose structured resource-based URLs
 // *3. To perform different actions on data like reading writing or deleting data
 // the API should use the http method NOT the URL
 // *4. Send data as JSON (usually)
@@ -132,18 +124,18 @@ app.use((req, res, next) => {
 // *1. Resources
 // The key abstraction of information in REST is a resource.
 // Therefore all the data we want to share in the API should be divided into logical resources.
-// Resource: Object or represantation of something, which has data associated to it.
+// Resource: Object or representation of something, which has data associated to it.
 // Any information that can be named can be a resource (name NOT a verb)
 // In the context of the Natours API it can be:
 // tours, users, reviews
 
 // *2 Exposing
-// Exposing the data using structured url taht the cllient can send request to.
+// Exposing the data using structured url that the client can send request to.
 // for example: https://www.natours.com/addNewTour
 // for example: https://www.natours.com/getTour
-// The entire adress is called an URL
+// The entire address is called an URL
 // the /addNewTour is called an API endpoint
-// Our API will have many differnt endpoints
+// Our API will have many different endpoints
 // each of which wll send different data back to the client
 // or perform different actions.
 // !Endpoints should contain only resources(nouns), and use HTTP methods for actions
@@ -151,15 +143,15 @@ app.use((req, res, next) => {
 // Instead use GET /tours
 // Instead use POST /tours
 // We used the same API endpoint and change the method(verb)
-// We can use the GET meethod to gert all the toursor
-// or we can use and id or a name to oget a specific tour like:
+// We can use the GET method to get all the tours
+// or we can use and id or a name to get a specific tour like:
 // GET /tours/7
 // We can use the POST method to create a new tour
 
 // To update the resources either a PUT or a PATCH request should be made tp the endpoint
-// Difference between them is wiht PUT the clilent supposed to send the entie updated object
+// Difference between them is with PUT the client supposed to send the entire updated object
 // while with PATCH it is only supposed to send the part of the object that has been changed.
-// POST is for creatingi a new  rsource whlie PUT and PATCH are for updating an existing resource
+// POST is for creating a new  resource while PUT and PATCH are for updating an existing resource
 
 // Top delete a resource there is the DELETE http method
 
@@ -173,7 +165,6 @@ app.use((req, res, next) => {
 // "Delete tour 9 from user number 3"
 // DELETE https://www.natours.com/users/3/tours/9
 
-
 // *What is JSON
 // JSON is a very lightweight data interchange format,
 // which is heavily used by web APIs coded in any programming language.
@@ -182,68 +173,68 @@ app.use((req, res, next) => {
 // JSON looks like a JavaScript object with all the key/value pairs
 // But there are some differences
 // The most important one is that all the keys have to be strings
-// It is also typical for valurs to be strings as well, but they be other things
+// It is also typical for values to be strings as well, but they be other things
 // like numbers, true/false values, other objects, or even arrays of other values.
 
 // Let's say that this is a data that we have in our database for a GET request to
 // https://www.natours.com/tours/5
-const JSON0 = {
-  "id": 5,
-  "tourName": "The Park Camper",
-  "rating": "4.9",
-  "guides": [
-    {
-      "name": "Steven Miller",
-      "role": "Lead Guide",
-    },
-    {
-      "name": "Lisa Brown",
-      "role": "Tour Guide",
-    }
-  ],
-};
+// const JSON0 = {
+//   "id": 5,
+//   "tourName": "The Park Camper",
+//   "rating": "4.9",
+//   "guides": [
+//     {
+//       "name": "Steven Miller",
+//       "role": "Lead Guide",
+//     },
+//     {
+//       "name": "Lisa Brown",
+//       "role": "Tour Guide",
+//     }
+//   ],
+// };
 // We could send it back like this to the client
 // but we usually do some simple response formatting
-// There are a couple of standarts for this
+// There are a couple of standards for this
 // we will use a very basic one called JSend
 // We simply create a new object and add a status message to it
-// in order to inform the clilent whether the was a success, failed, or error
+// in order to inform the client whether the was a success, failed, or error
 // then we put our original data into a new object called data
-// There are other standarts for response formatting like:
+// There are other standards for response formatting like:
 // JSON:API or ODATA JSON Protocol
-const JSEND =
-{
-  "status": "data",
 
-  "data": {
-    "id": 5,
-    "tourName": "The Park Camper",
-    "rating": "4.9",
-    "guides": [
-      {
-        "name": "Steven Miller",
-        "role": "Lead Guide",
-      },
-      {
-        "name": "Lisa Brown",
-        "role": "Tour Guide",
-      }
-    ],
-  }
-};
+// const JSEND =
+// {
+//   "status": "data",
+
+//   "data": {
+//     "id": 5,
+//     "tourName": "The Park Camper",
+//     "rating": "4.9",
+//     "guides": [
+//       {
+//         "name": "Steven Miller",
+//         "role": "Lead Guide",
+//       },
+//       {
+//         "name": "Lisa Brown",
+//         "role": "Tour Guide",
+//       }
+//     ],
+//   }
+// };
 
 // *5 Be Stateless
 // ALl state is handled on the client
-// This meand that each request must contain all the information
-// neccessary to process a certain request.
+// This means that each request must contain all the information
+// necessary to process a certain request.
 // The server should not have to remember previous requests
 
-// Exapmles of state: loggedIN    currentPage
+// Examples of state: loggedIN    currentPage
 
 // We call the JSON.parse to turn the JSON into a JavaScript object
-// We do this because json() method of express.js automaticly turns JAvaScript object into JSON
+// We do this because json() method of express.js automatically turns JAvaScript object into JSON
 // By calling the JSON.stringify() method
-
 
 // !To use tourRouter we have to add it to our middleware stack
 // Because tourRouter is a real middleware
@@ -256,6 +247,4 @@ const JSEND =
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 
-
-module.exports = app
-
+module.exports = app;

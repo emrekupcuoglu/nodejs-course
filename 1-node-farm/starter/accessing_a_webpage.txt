@@ -1,31 +1,31 @@
 When we try to access a webpage like for example https://www.google.com/maps
-http is the protocol name and standsa for: hyper text transfer protocol.
+http is the protocol name and stands for: hyper text transfer protocol.
 google is the domain name,
 maps is the resource.
 
 1.
-First we need to find the real adress of the website we are trying to access
+First we need to find the real address of the website we are trying to access
 google is just an easy to remember placeholder for humans.
-To find the real adress we do a DNS lookup
+To find the real address we do a DNS lookup
 DNS stands for Domain Name Server
-DNS are speacial servers which are basically like phonebooks for the internet.
-DNS will convert the domain nae to the IP adress.
+DNS are special servers which are basically like phone books for the internet.
+DNS will convert the domain nae to the IP address.
 
 Port number is to identify a specific service running on the server.
-You can think of it as a sub-adress.
-The port number has nothjing to do with the google/maps
-resource we are want to acces. That resource will be sent over the http request.
+You can think of it as a sub-address.
+The port number has nothing to do with the google/maps
+resource we are want to access. That resource will be sent over the http request.
 
 2.
-After we get the IP adress from the DNS.
-A TCP/IP sokcet connection is established between the server and the client
+After we get the IP address from the DNS.
+A TCP/IP socket connection is established between the server and the client
 This connection is typically is kept alive for the entire time it takes to
 transfer all the files of the website. 
 TCP stands for: Transmission Control Protocol.
 IP stands for: Internet Protocol.
 A communication protocol is a system of rules that allows two or more parties
 to communicate.
-Together they are the communication protocols that define exatcly
+Together they are the communication protocols that define exactly
 how data travels across the web.
 They are the internets fundamental control system.
 They are the ones who set the rules about how data moves on the internet.
@@ -74,7 +74,7 @@ An http request looks like This
 
   4.
   The request hits the server and the servers send an http response to the client
-  HTTP response message looks quite similliar tot he request
+  HTTP response message looks quite similar tot he request
   And http response looks like this:
 
   HTTP/1.1 200 OK
@@ -85,7 +85,7 @@ An http request looks like This
 
   <BODY>
 
-  Start line of the http response consists of HTTP version, status code, and sttatus message
+  Start line of the http response consists of HTTP version, status code, and status message
   Start line: HTTP version + status code + status message
 
   Response headers are information about the response itself.
@@ -94,14 +94,14 @@ An http request looks like This
   unlike request headers.
 
   Last part of the response header is the body.
-  It is the develepor who specificly sends back the body in the response.
+  It is the developer who specifically sends back the body in the response.
 
   In this imaginary website we only did one request and one response.
   However in a real website there will be many requests and responses.
   Because when we do the first request all we get back is the initial html
-  That file than will get scanned for all the assests it needs
+  That file than will get scanned for all the assets it needs
   to build the entire website like JavaScript files, CSS files, image files etc
-  and for each of these different files the browser wlll make a new http request
+  and for each of these different files the browser will make a new http request
   to the server.
   There can be multiple requests and responses happening at the same time,
   but the amount is limited or the connection would start to slow down
@@ -113,13 +113,13 @@ An http request looks like This
   First the TCP breaks up the requests into thousands of small chunks called packets
   before they are sent.
   Once they arrive at their destination it will re-assemble all the packets
-  into the original request or response so taht the message arrive at the destination
+  into the original request or response so that the message arrive at the destination
   as quickly as possible. Which wouldn't be possible if we sent the website as one big chunk.
-  That would be like going through the dense trafic with the biggest bus you can imagine.
+  That would be like going through the dense traffic with the biggest bus you can imagine.
 
   The job of the IP protocol is to sent and route these packets through the internet.
   It ensures all of them arrive at the destination they should go
-  using IP adresses on each packet.
+  using IP addresses on each packet.
   This is just a very broad overview of what happens behind the scenes of the web.
 
 

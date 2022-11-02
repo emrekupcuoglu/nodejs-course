@@ -11,15 +11,15 @@ NODE_ENV=development nodemon server.js
 Many packages on npm that we use for express development depend on this variable
 We should to change this variable to production when we are going to deploy it.
 
-We can do a lot more wtih environment variables.
+We can do a lot more with environment variables.
 We usually use environment variables like configuration settings for our application
 Whenever our app needs configuration for stuff that might change
-based on the environment that it is running we use environmetn variables.
+based on the environment that it is running we use environment variables.
 For example we might use different databases for development and testing
 so we can define a variable for each and activate the right database according to the environment.
 Also we could set sensitive data like passwords and usernames using environment variables.
 
-It is not really practical to define all thses variables in the command where we start the application.
+It is not really practical to define all these variables in the command where we start the application.
 Instead we create a configuration file called config.env in this case
 
 

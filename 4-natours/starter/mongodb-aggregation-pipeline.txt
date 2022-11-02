@@ -1,0 +1,19 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!
+The aggregation Pipeline doesn't cast types so if doesn't enforce the schema
+If it did enforce the schema we could have added fields that didn't specified in our schema
+The aggregation pipeline returns a plain JavaScript Object not a mongoose document
+This means that it bypass the mongoose.
+And because it bypasses the mongoose we lose quite a bit of important features
+like enforcing the schema or type casting
+If you want the fields you have set ot be a certain type e.g. input fields needs be a string
+Then you either need to let the schema do that and not use aggregation pipeline
+Or do the type casting manually which is not desirable
+So only use aggregation when needed otherwise use queries
+
+MongoDB aggregation pipeline is an extremely powerful and extremely useful mongoDb framework for data aggregation
+
+Ideal is that we basically define a pipeline that all the documents
+from a certain collection go through where they are precessed step
+by step in order to transform them into aggregated results. 
+For example we can use the aggregation pipeline to calculate averages, min and max values,
+we can calculate distances even and we can do all kinds of stuff it is so powerful.

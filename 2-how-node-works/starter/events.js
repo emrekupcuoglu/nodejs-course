@@ -5,7 +5,7 @@
 const EventEmitter = require("events");
 const http = require("http");
 
-// !If you were to use this pattern in real life ist is best to create a new clas that inherits from the node event emitter
+// !If you were to use this pattern in real life ist is best to create a new class that inherits from the node event emitter
 // This mechanism of extending the EventEmitter class is basically how other core node modules
 // like https, fs and many others implement events internally.
 // So all of them inherit from the EventEmitter class
@@ -26,8 +26,8 @@ myEMitter.on("newSale", () => {
   console.log("There was a new sale");
 });
 
-// Let's add another event listener, one of the nice things anout event emitters
-// is that we can add multile listeners for the same event.
+// Let's add another event listener, one of the nice things about event emitters
+// is that we can add multiple listeners for the same event.
 myEMitter.on("newSale", () => {
   console.log("Customer name: Emre");
 });
@@ -49,11 +49,11 @@ myEMitter.emit("newSale", 9);
 const server = http.createServer();
 
 server.on("request", (req, res) => {
-  console.log("Request recieved");
-  res.end("Request recieved");
+  console.log("Request received");
+  res.end("Request received");
 });
 server.on("request", (req, res) => {
-  console.log("Another request recieved");
+  console.log("Another request received");
 });
 
 server.on("close", () => console.log("Server closed"));

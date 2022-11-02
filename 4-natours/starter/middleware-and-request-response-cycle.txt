@@ -1,7 +1,7 @@
-The essense of the Express development is to
+The essence of the Express development is to
 understand and then to use the request - response cycle.
 
-To start the request - response cycle our express app recieves a
+To start the request - response cycle our express app receives a
 request when someone hits our server for which it will create
 a request and a response object. 
 That data then will be used and processed in order to generate
@@ -13,24 +13,24 @@ or execute any other code we want.
 So middleware doesn't have to be just about the request or the response.
 But it is usually about the request object.
 It is called middleware because it is a function that is executed between
-so in the middle of recieving the request and sending the response.
+so in the middle of receiving the request and sending the response.
 We can say that in Express.js everything is a middleware, even our
 route definitions.
 We can think of the route handler functions that we wrote as middleware functions.
-They are simply middleware funtions that are only executed for certain routes.
+They are simply middleware functions that are only executed for certain routes.
 All the middleware we use in our app is called the middleware stack.
 It is important to remember that the order of the middleware in the stack is 
 defined by the order they are defined in the code.
-So a middeware that appears first in the code executed before one that appears later.
+So a middleware that appears first in the code executed before one that appears later.
 Order of the code matters a lot in Express.js.
 
 You can think of the whole process like this:
-Our request and response objects taht were created in the beginning
-go through each middeware where they are processed or where just smoe other code is executed.
+Our request and response objects that were created in the beginning
+go through each middleware where they are processed or where just some other code is executed.
 At the end of each middleware function a next() function is called.
 next() is a function that we have access to in each middleware function just like request and response objects.
 When we call the next() function the next middleware in the stack will be executed
-with the exact same request and response objects. That happnes with all the middleware until we reach the last one.
+with the exact same request and response objects. That happens with all the middleware until we reach the last one.
 Initial request and response objects go through each middleware step by step.
 You can think of this whole process kind of a pipeline where our data go through.
 Like it is being piped from request to response.

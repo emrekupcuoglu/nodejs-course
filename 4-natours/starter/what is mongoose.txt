@@ -1,4 +1,4 @@
-MOngoose is an Object Data Modeling (ODM) library
+Mongoose is an Object Data Modeling (ODM) library
 for mongoDB and Node.js, a higher level of abstraction.
 It is a bit like Express.js
 Express.js is an abstraction over Node.js
@@ -8,10 +8,10 @@ that will then interact with a database.
 We could use a regular mongoDB driver to access our database
 and it would work just fine.
 But instead we use mongoose because it gives us a lot more
-functionality oout of the box, aloowing for simpler and
+functionality out of the box, allowing for simpler and
 faster development.
 Some of the features mongoose gives us are:
-Schemas to model data and releationships, easy data validation,
+Schemas to model data and relationships, easy data validation,
 simple query API, middleware, etc.
 
 Mongoose Schema: where we model our data, by describing the structure of our data,
@@ -19,3 +19,16 @@ set default values, and validation.
 
 Mongoose Model: We take the schema and make a model out of it.
 Model is a wrapper for the schema, providing an interface to the database for CRUD operations
+
+Mongoose is all about models
+Model is like a blueprint we use to make documents.
+So they are a bit like classes.
+We create a model in mongoose in order to create documents using the model
+and to use CRUD operations.
+
+To create a model we use a schema
+We use schema to describe our data, to set default values,
+to validate the data, etc.
+
+
+If using skip() with sort(), be sure to include at least one field in your sort that contains unique values, before passing results to skip()

@@ -22,7 +22,7 @@
 // We can import the exported value and save it into a variable
 // We can give it any name we want
 
-// modulel.exports
+// module.exports
 const C = require("./test-module-1");
 const calc1 = new C();
 console.log(calc1.add(2, 5));
@@ -32,7 +32,6 @@ console.log(calc1.add(2, 5));
 const calc2 = require("./test-module-2");
 const { add, multiply, divide } = require("./test-module-2");
 console.log(multiply(2, 5));
-
 
 // Caching
 // We call this function right away without saving it into a variable/
@@ -45,5 +44,3 @@ console.log(multiply(2, 5));
 require(`./test-module-3`)();
 require(`./test-module-3`)();
 require(`./test-module-3`)();
-
-
