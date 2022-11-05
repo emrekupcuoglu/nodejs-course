@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const slugify = require("slugify");
 
 // ?SCHEMA
 // We pass in the schema as an object ot the mongoose.Schema() method
@@ -31,6 +32,7 @@ const tourSchema = new mongoose.Schema(
       // It removes the white space from the beginning and the end of the string.
       trim: true,
     },
+    slug: String,
     duration: {
       type: Number,
       required: [true, "A tour must have a duration"],
@@ -102,6 +104,14 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      // Instead of making the normal tours default to false and querying for
+      // the normal tours in the pre find hook like Jonas did
+      // I have selected to only have the secretTour field for secret tours
+      // so that the normal tours doesn't have an extra field to occupy space on the database
+      // and use the query operator $exist to check if the secretTour field exist
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -119,6 +129,11 @@ const tourSchema = new mongoose.Schema(
 
 // !By default, Mongoose does not include virtuals in console.log() output.
 // !To include virtuals in console.log(), you need to set the toObject schema option to { virtuals: true }, or use toObject() before printing the object.
+
+// !When we set the toJSON: { virtuals: true }, toObject: { virtuals: true } we also see an id field in our documents
+// !The reason for this the mongoose automatically adds a virtual getter to every schema by default and that virtual getter is the id
+// !But the virtual id is type of string while the _id is type of ObjectId
+
 // Virtual properties are fields that we can define in our schema but they are not persisted
 // So they will not be saved to the data base in order to save us some space there.
 // Most of the time we really want to save our data to the database
@@ -139,9 +154,104 @@ const tourSchema = new mongoose.Schema(
 // Get takes a function as an argument and it can not be an arrow function
 // Because an arrow function have a lexical .this keyword
 // but we want the .this keyword to point to the mongoose document
-// !We can NOT use this virtual property in a query because they are technically not part of the data base
+// !We can NOT use this virtual property in a query because they are technically not part of the database
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
+});
+
+// ?MIDDLEWARE
+// Just like Express.js mongoose also has the concept of middleware
+// Middleware is an absolutely fundamental concept in mongoose just like in Express js
+// We will use middleware throughout this project.
+// Just like with Express js we can use mongoose middleware to make something happen between two events
+// e.g. for each time a document is saved to the database we can run a function between when the save command is issued
+// and the actual saving of the document or after the actual saving.
+// Because we can define actions to run before or after a certain event mongoose middleware is divided into two kinds pre hook and post hook
+// There are 4 types of middleware in mongoose: Document, query, aggregate, and model middleware
+
+// Just like virtual properties we define a middleware on the schema
+
+// ?DOCUMENT MIDDLEWARE
+// Document middleware is a middleware that can act on the currently processed document
+// This is the pre middleware this will run before an actual event
+// This takes the event as the first argument and a callback function as the second argument
+// This runs before the .save() and .create() method but not on .insertMany()
+tourSchema.pre("save", function (next) {
+  // In a "save" middleware the this keyword will point to the currently processed document.
+  // This is the reason it is called Document Middleware
+  // it is because in this function we have access to the document that is being processed.
+  // *We need to define the slug property in our schema for it to show up
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+// In the case of a post middleware the callback function has access
+// to the document that was just saved to the database as well as the next function.
+// *Post middleware functions are executed after all the pre middleware functions are executed.
+tourSchema.post("save", function (doc, next) {
+  console.log("this of post middleware", typeof this, this);
+  console.log("doc of post middleware", typeof doc, doc);
+  next();
+});
+
+// ?QUERY MIDDLEWARE
+// Query middleware allows us to run functions before or after a certain query is executed.
+// This middleware is going to run before any find query is executed
+// The big difference is that the this keyword will now point at the current query instead of the current document.
+// Because we are not processing a document we will process a query.
+// Let's say that we can have secret tours in our database
+// like for tours that are offered only internally or for a very small VIP group that the public shouldn't know about.
+// Since these tours our secret we don't want these tours to ever appear at the result outputs.
+// So we are going to create a secret tour field and query only for tours tha tours not secret.
+// !This has a problem we can not query for secret fields with the code base we have right now.
+// !So this is more for learning purposes.
+tourSchema.pre(/^find/, function (next) {
+  // Jonas' way
+  // this.find({ secretTour: { $ne: true } });
+  // My way
+  this.find({ secretTour: { $exists: false } });
+  // console.log(this);
+  // Checking how long it takes to execute the current query
+  this.start = Date.now();
+  next();
+});
+
+// "find" pre hook doesn't work for findOne so we can see the secretTOur using its id
+// To make it so the middleware works for the findOne as well we need to specify that as well
+// Or instead of repeating ourselves we can use a regular expression that matches any hook that starts with find
+// So it will be triggered for find, findOne, findOneAndDelete, etc.
+// tourSchema.pre("findOne", function (next) {
+//   this.find({ secretTour: { $exists: false } });
+//   next();
+// });
+
+// *The post middleware has access to the actual docs returned from the database instead of the query like the pre middleware
+// This is because post middleware runs after the query has already executed
+// therefore it has access to the documents that we returned.
+// *This keyword still points to the Query object
+tourSchema.post("find", function (docs, next) {
+  // Checking how long it takes to execute the current query
+  const time = Date.now() - this.start;
+  console.log(`The query took ${time} miliseconds to finish`);
+  next();
+});
+
+// ?AGGREGATE MIDDLEWARE
+// Aggregate middleware allows us to run functions before or after an aggregation happens.
+// Right now secret tours are still being used in aggregation.
+// When we use the getTourStats() method we get 10 tours instead of 9
+// Because when we are aggregating data we are still using the secret tours in our statistics
+// The this keyword in aggregation middleware points to the Aggregate object
+tourSchema.pre("aggregate", function (next) {
+  // pipeline method returns <ARRAY> the current pipeline.
+  // The current pipeline is similar to the operation that will be executed.
+  console.log(this.pipeline());
+  // We need to add another match statement to the beginning of the pipeline
+  // When we want to add something to the beginning of an array we use the unshift method
+  // With this mongoose adds the aggregation operation we want
+  // to the beginning of the aggregation pipeline before sending it to the mongoDB server.
+  this.pipeline().unshift({ $match: { secretTour: { $exists: false } } });
+  next();
 });
 
 // ?MODEL

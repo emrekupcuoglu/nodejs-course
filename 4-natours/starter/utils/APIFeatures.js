@@ -103,11 +103,11 @@ class APIFeatures {
     }
     return this;
   }
+
   /**
    *
    * @tutorial This is an async function. Because of that this function needs to be the last in chaining
    */
-
   async paginate() {
     // ?PAGINATION
     // limit is the amount of data that should be showed

@@ -32,3 +32,24 @@ to validate the data, etc.
 
 
 If using skip() with sort(), be sure to include at least one field in your sort that contains unique values, before passing results to skip()
+
+Just like Express.js mongoose also has the concept of middleware
+Middleware is an absolutely fundamental concept in mongoose just like in Express js
+We will use middleware throughout this project.
+Just like with Express js we can use mongoose middleware to make something happen between two events
+e.g. for each time a document is saved to the database we can run a function between when the save command is issued
+and the actual saving of the document or after the actual saving.
+Because we can define actions to run before or after a certain event mongoose middleware is divided into two kinds pre hook and post hook 
+There are 4 types of middleware in mongoose: Document, query, aggregate, and model middleware 
+
+Just like virtual properties we define a middleware on the schema
+We need to call the next() function after our middleware just like in Express js
+
+Document Middleware
+Document middleware is a middleware that can act on the currently processed document
+
+Query Middleware
+Query middleware allows us to run functions before or after a certain query is executed.
+
+Aggregate Middleware
+Aggregate middleware allows us to run functions before or after an aggregation happens.

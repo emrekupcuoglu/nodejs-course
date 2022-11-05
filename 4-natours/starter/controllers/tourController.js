@@ -1,5 +1,6 @@
 // const fs = require("fs");
 const Tour = require("../models/tourModel");
+
 const APIFeatures = require("../utils/APIFeatures");
 
 // We don't need this anymore because we are working with a real database now
@@ -53,7 +54,7 @@ exports.aliasTopTours = (req, res, next) => {
 exports.getAllTours = async (req, res) => {
   try {
     // *EXECUTE THE QUERY
-    const features = await new APIFeatures(Tour.find(), req.query)
+    const features = await new APIFeatures(Tour, req.query)
       // paginate() method needs to be the last because it is an async function
       // So we have tho wait that and if it is not the last the other methods can not access the query object
       // because paginate returns a promise that needs to be resolved
@@ -92,7 +93,7 @@ exports.getAllTours = async (req, res) => {
 
 exports.getTour = async (req, res) => {
   try {
-    // req.params are where all the parameters (variables) we define here are stored
+    // req.params are where all the parameters (variables) we define in the URL are stored
 
     // findById finds the document with the matching id
     // It is a shorthand for the findOne method with a filter object:
@@ -114,6 +115,11 @@ exports.getTour = async (req, res) => {
 
 exports.createTour = async (req, res) => {
   try {
+    // !the body.req is an object because of the body parser middleware
+    // We are using the express.json() middleware
+    // And this middleware parses the request
+    // and turns the req.body from a string into an object
+
     // Instead of doing this to create a document
     // const newTour = new Tour({req.body});
     // await newTour.save();

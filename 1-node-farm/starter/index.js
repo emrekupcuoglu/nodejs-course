@@ -97,7 +97,7 @@ const tempProduct = fs.readFileSync(
 );
 
 const slugs = dataObj.map((el) => slugify(el.productName, { lower: true }));
-console.log(slugs);
+console.log("slugs", slugs);
 
 // **************************
 // *SERVER
