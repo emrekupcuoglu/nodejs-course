@@ -5,6 +5,8 @@ const morgan = require("morgan");
 // and save its results to a variable called app
 const app = express();
 
+const AppError = require("./utils/appError");
+const globalErrorHandler = require("./controllers/errorController");
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 
@@ -246,5 +248,55 @@ app.use((req, res, next) => {
 // We are mounting the router on a new route
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+
+// ? Handling Unhandled Routes
+// If a route reaches here past the tourRouter and the userRouter
+// So past all of the routers we use than that route is unhandled
+// and we can add a middleware at the end to handle them
+// We can use app.{http method} but we would need one for each method
+// like this: app.get().post()...
+// But we don't want that we to handle all the routes
+// and methods in one handler.
+// We can use app.get to handle all http methods
+// and we wan pass in a star to handle all of the routes
+
+// This works because of the request response cycle
+// If any matching route is found than the request response cycle is finished
+// and the request doesn't hit this middleware so it doesn't get executed.
+// *res.end method ends the request response cycle
+// In express it is automatically called with the .json() method
+// It calls the .json() and sets the Content-Type to application/json
+app.all("*", (req, res, next) => {
+  // res.status(404).json({
+  //   status: "fail",
+  //   message: `Can't find ${req.originalUrl} on this server!`,
+  // });
+
+  // ? Creating an Error
+  // const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  // err.status = "fail";
+  // err.statusCode = 404;
+
+  // We can't just use throw err we need to use the next() function
+  // We pass in the error to the next() function.
+  // If the next() function receives an argument no mater what it is
+  // Express.js will automatically know that there was an error
+  // and will assume whatever we are passing as argument to be an error.
+  // This applies to every single next() function in every single middleware in our application.
+  // So whenever we pass in anything to next() it will assume it is an error
+  // and it will skip all the other middlewares in the middleware stack
+  // and send the error that we have passed in into our global error handling middleware
+  // which then the error handling middleware will be executed.
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// ?Implementing Global Error Handling
+// *You can read more about error handling with express it in the what-is-express.txt file
+// To define an error handling middleware all we have to do is to
+// give the middleware function four arguments and express will automatically recognize
+// it as error handling middleware and therefore only call it when there is an error.
+
+// Just like in many other cases this middleware function is an error first function
+app.use(globalErrorHandler);
 
 module.exports = app;
