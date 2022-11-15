@@ -17,3 +17,50 @@ The easiest way to do it is from the terminal
 The standard for connecting the variables in the .env file with our code
 is using the dotenv packages
 npm i dotenv to install it
+
+######## Error Handling #########
+
+Operational Errors
+Operational errors are problems that we can predict will happen at some point,
+so we just need to handle them in advance.
+They have nothing to do with bugs in our code
+instead they depend on the user, system or the network
+You might see the term exception used instead of errors
+wile they are conceptually different many people use them interchangeably
+
+Some examples:
+=>Invalid path accessed
+=>Invalid user input
+=>Failed to connect to server
+=>Failed to connect to database
+=>Request timeout
+=>Etc...
+
+Programming Errors
+Bugs we developers introduce into our code.
+Difficult to find and handle.
+
+SOme examples:
+=>Reading properties on undefined
+=>Passing a number where an object is expected
+=>using await without sync
+=>Using req.query instead of req.body
+=>Etc...
+
+When we say error handling with Express we mainly mean the first one.
+Because these are the ones that are easy to catch and handle with our Express application.
+Express comes with error handling out of the box.
+So all we have to do is to write a global express error handling middleware
+that will catch errors coming all over the application.
+No matter if it is an error coming from a route handler or a model validator
+or from somewhere else the goal is that all these errors end up in
+one central error handling middleware, so that we can send a nice response
+to the client letting them know what happened.
+So handling in this case just means sending sending a response letting the user know what happened.
+But handling can also, mean in other cases, retrying the operation, crashing the server
+or just ignoring the error all together.
+The beauty of having a global error handling middleware is that it allows the separation of concerns.
+So we don't have to worry about error handling in our business logic or in our controllers
+or in anywhere except the global error handling middleware.
+We can simply send the errors down to the error handler which will then decide what to with the errors.
+

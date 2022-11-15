@@ -7,9 +7,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\server.js"
+      "name": "Node: Nodemon",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start"],
+      "outputCapture": "std"
     }
   ]
 }
