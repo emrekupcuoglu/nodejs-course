@@ -81,7 +81,7 @@ We have gone through the steps of creating a remote database
 There are lots of important things to keep in mind
 you can find these in the lecture 81
 One of the important thing is to whitelisting IP addresses
-If you want to access this database fro another computer 
+If you want to access this database from another computer 
 you need to whitelist that computer's IP address 
 Since we are not dealing with sensitive data we can whitelist all IP addresses in the world
 We will still need our username and password

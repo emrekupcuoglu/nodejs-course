@@ -53,3 +53,31 @@ Query middleware allows us to run functions before or after a certain query is e
 
 Aggregate Middleware
 Aggregate middleware allows us to run functions before or after an aggregation happens.
+
+
+Data Validation
+Validation is checking if the entered values are in the right format for each field in
+our document schema and also that values have actually been entered for all of the required fields.
+We will do the data validation on the model because of the fat model, thin controller philosophy.
+Mongoose comes with bunch of data validation tools out of the box.
+
+Custom Validators
+Sometimes the built in validators are not enough and we need custom validators.
+Validators are functions that returns either true or false.
+If it returns false than it means there is an error
+If it returns true than the validation is correct and the input can be accepted. 
+
+Third Party Validators
+We can also use third party validators libraries like validator.js
+There are really useful validators there so definitely check them out
+
+Data Sanitization
+Data Sanitization is to make sure the input data is clean.
+Clean in a sense that there is no malicious code being injected into our database
+or into the application itself.
+During sanitization we remove unwanted characters and code from the data.
+NEVER ACCEPT INPUT DATA FROM A USE AS IT IS.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!
+TO USE A DIFFERENT DATABASE THAN TEST SPECIFY IT IN THE CONNECTION STRING LIKE THIS
+E.G.mongodb+srv://emre:<PASSWORD>@cluster0.o3co3qa.mongodb.net/<DATABASE>?retryWrites=true&w=majority

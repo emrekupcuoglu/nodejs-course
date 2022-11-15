@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
+const validator = require("validator");
 
 // ?SCHEMA
 // We pass in the schema as an object ot the mongoose.Schema() method
@@ -25,8 +26,49 @@ const tourSchema = new mongoose.Schema(
     // We can also make the names unique
     // That way no two tour can have the same name
     name: {
+      // ?VALIDATORS
+      // Validation is checking if the entered values are in the right format for each field in
+      // our document schema and also that values have actually been entered for all of the required fields.
+      // We will do the data validation on the model because of the fat model, thin controller philosophy.
+      // Mongoose comes with bunch of data validation tools out of the box.
+      // !If we want to run validation on update we need to set the runVAlidators option to true in the update methods(updateOne, updateMany, findByIdAndUpdate, etc.)
       type: String,
+      // required is a data validator
       required: [true, "A tour must have a name"],
+      // maxlength is use top specify the maximum length a string can have
+      // if it is longer than that it going to produce an error
+      maxlength: [
+        40,
+        "A tour name must have less than or equal to 40 characters.",
+      ],
+      // We also have minlength to specify the minimum length a string can have
+      minlength: [
+        10,
+        "A tour name must have more than or equal to 10 characters",
+      ],
+      // ?Third Party Validator
+      // With the validator.js validator is an object and on that object we have methods
+      // One of those methods is the isAlpha, this methods check if the string
+      // that is passed in only contains letters
+      // If we don't want to pass in options to the isAlpha method we can use it like this
+      // We don't call it mongoose will call it for us when it is validating it
+      // validate:[validator.isAlpha, "Tour must only contain letters"]
+      // ıf we want to pass in options we need to create a function
+      // and then call the validator we want inside that function.
+      // When mongoose is validating it will run the function we have wrote
+      // So we are just writing a function we are not calling the function ourselves
+      // mongoose call the function.
+
+      validate: {
+        validator: function (val) {
+          // isAlpha by default doesn't allow spaces
+          // We need to pass an option to make it work with spaces
+          // We enter the character we want ignored as a string or RegExp and this fixes it
+          return validator.isAlpha(val, "tr-TR", { ignore: " " });
+        },
+        message: "Tour must only contain letters",
+      },
+      // unique will throw an error if it is not met but it is technically not a data validator
       unique: true,
       // trim only works with string.
       // It removes the white space from the beginning and the end of the string.
@@ -43,23 +85,99 @@ const tourSchema = new mongoose.Schema(
     },
     difficulty: {
       type: String,
+      // we turn the input to lower case so that use can enter
+      // either "easy", "medium", "hard" or "EASY", "MEDIUM", "HARD"
+      lowercase: true,
       required: [true, "A tour must have a difficulty"],
+      // enum validator
+      // We want to only have 3 difficulties
+      // If the use passes anything other than the specified values we throw an error
+      // We use an enum for this
+      // We create an array with the values we want
+      enum: {
+        values: ["easy", "medium", "difficult"],
+        message: "A tour must have either easy, medium or difficult difficulty",
+      },
     },
     // We can set a default value as well
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      // On numbers we have the min and max validators
+      // A rating must be between 1 and 5
+      min: [1, "Rating must be higher than 1.0"],
+      max: [5, "Rating must be lower than 5.0"],
     },
     ratingsQuantity: {
       type: Number,
       default: 0,
     },
+
     price: {
       type: Number,
       required: [true, "A tour must have a price"],
     },
-    discount: {
+    //? CUSTOM VALIDATORS
+    // Sometimes the built in validators are not enough and we need custom validators.
+    // Validators are functions that returns either true or false.
+    // If it returns false than it means there is an error
+    // If it returns true than the validation is correct and the input can be accepted.
+    // We will create a custom validator that will check if the discountPrice is lower than the price
+    priceDiscount: {
       type: Number,
+      // We use the validate property to use our validator
+      // We have a callback function as the value and the
+      // !About this keyword
+      // callbacks function's this keyword points to the document when we are creating a new document
+      // but it won't have access to the document when we are updating it
+      // Because of that this function will not work on update
+      // The callback function also has access to the value that was inputted as a parameter
+      validate: {
+        validator: function (val) {
+          // !!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!
+          // !There are so many caveats of using update validators so always check the docs and test them
+          // ! Below is just one of them:
+          // !update validators might have problems validating because at the time of validation the document might not be in memory
+          // !If that is the case then it throws an error.
+
+          // !Using the code below for update validators
+
+          // This keywords doesn't points to the document
+          // But we can get the operation from this.op
+          // I tried with this.op===findOneAndUpdate
+          // But even though i updated the document the this.op is equal to find
+          // it defaults to find because of how mongoose works
+          // If we use the method below it will work both for create and findOneAndUpdate
+          console.log(this.op);
+          if (this.op === "find") {
+            // .getUpdate() method Returns the current update operations as a JSON object.
+            // We have the $set operation and in there we have access to the price and the priceDiscount
+            // With this method we have to send both the price and the priceDiscount
+            // with the body of the request when we want to update the priceDiscount
+            // otherwise it won't work.
+            console.log("0", this.getUpdate());
+            console.log("1", this.getUpdate().$set.priceDiscount);
+            console.log("2", this.getUpdate().$set.price);
+            return (
+              this.getUpdate().$set.priceDiscount < this.getUpdate().$set.price
+            );
+          }
+          // ? Option 2: We can also replace the whole document using replaceOne
+
+          // ? Option 3: We can also use the const tour=await Tour.findById(id) (we need to pass in the id
+          // ? instead of the value we want which is the priceDiscount right now we can use a middleware for this)
+          // ? I haven't tried these solutions but if we can't pass in both the id and the priceDiscount
+          // ? We can pass them in together and use JavaScript to parse them apart then use them
+          // ? then use Tour.price>val
+          return val < this.price;
+        },
+        // We can set an error message as well
+        // This message also has access to the value
+        // This works in a weird way and this is internal to mongoose
+        // This has nothing to do with JavaScript
+        // To use the value in the message we use it like this {VALUE}
+        message: "priceDiscount ({VALUE}) must be lower than price",
+      },
     },
     summary: {
       type: String,
@@ -188,9 +306,10 @@ tourSchema.pre("save", function (next) {
 // In the case of a post middleware the callback function has access
 // to the document that was just saved to the database as well as the next function.
 // *Post middleware functions are executed after all the pre middleware functions are executed.
+// eslint-disable-next-line prefer-arrow-callback
 tourSchema.post("save", function (doc, next) {
-  console.log("this of post middleware", typeof this, this);
-  console.log("doc of post middleware", typeof doc, doc);
+  // console.log("this of post middleware", typeof this, this);
+  // console.log("doc of post middleware", typeof doc, doc);
   next();
 });
 
@@ -216,7 +335,31 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-// "find" pre hook doesn't work for findOne so we can see the secretTOur using its id
+// !RUNNING VALIDATORS ON UPDATE MIDDLEWARE
+// With the code below we can run update validators one every update that uses the findOneAndUpdate
+// We can also expand it with other pre hooks if we want (e.g. we can add one for update as well)
+
+tourSchema.pre("findOneAndUpdate", function (next) {
+  console.log("hello from update");
+  this.setOptions({ runValidators: true });
+  next();
+});
+
+// !If we want to run update validators on multiple schemas not just on tourSchema
+// !We can use plugins.
+// !Plugins will run for every schema in our project they are awesome!
+
+// function setRunValidators() {
+//   this.setOptions({ runValidators: true });
+// }
+// mongoose.plugin((schema) => {
+//   schema.pre("findOneAndUpdate", setRunValidators);
+//   schema.pre("updateMany", setRunValidators);
+//   schema.pre("updateOne", setRunValidators);
+//   schema.pre("update", setRunValidators);
+// });
+
+// "find" pre hook doesn't work for findOne so we can see the secretTour using its id
 // To make it so the middleware works for the findOne as well we need to specify that as well
 // Or instead of repeating ourselves we can use a regular expression that matches any hook that starts with find
 // So it will be triggered for find, findOne, findOneAndDelete, etc.

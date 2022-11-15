@@ -155,10 +155,15 @@ exports.updateTour = async (req, res) => {
       // validators we have set on our schema will be run again.
       // If we didn't set this to true
       // we could changed the price to be a string.
+      // !If we want to validate data on update we need to set the runValidators to true
       // But because the validators from our schema runs with the update
       // it checks the data against the schema and because
       // we allow price to be only a number if we try to enter a string it throws an error.
-      runValidators: true,
+      // !We moved the runValidators to the tourModel using a pre findOneAndUpdate hook
+      // !this way it works for every method that uses find findOneAndUpdate not just updateTour
+      // !Look there for more information
+      // runValidators: true,
+      context: "query",
     });
     res.status(200).json({
       status: "success",
@@ -169,7 +174,7 @@ exports.updateTour = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: "fail",
-      message: "Invalid data sent!",
+      message: err,
     });
   }
 };
