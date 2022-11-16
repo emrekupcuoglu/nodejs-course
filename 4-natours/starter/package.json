@@ -4,7 +4,7 @@
   "description": "Learning node, express, and mongoDB",
   "main": "app.js",
   "scripts": {
-    "start": "SET NODE_ENV=development&&nodemon server.js",
+    "start": "nodemon server.js",
     "build": "SET NODE_ENV=production&&nodemon server.js"
   },
   "author": "Emre Küpçüoğlu",

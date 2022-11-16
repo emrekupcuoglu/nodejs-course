@@ -1,3 +1,5 @@
+// !All errors that we create using the AppError class will we operational errors
+
 // We will create our own error class instead of using the built in oen to streamline the process
 // our error class will inherit from the built in Error class
 class AppError extends Error {
