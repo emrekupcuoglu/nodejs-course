@@ -30,7 +30,7 @@ class AppError extends Error {
     // Second argument is called constructorOpt optional and accepts a function. If given all frames above the function including itself
     // will be omitted from the generated stack trace.
     // The constructorOpt argument is useful for hiding implementation details of error generation from the user.
-    Error.captureStackTrace(this);
+    Error.captureStackTrace(this, this.constructor);
     // console.log("this", this);
     // console.dir("this.constructor", this.constructor);
   }

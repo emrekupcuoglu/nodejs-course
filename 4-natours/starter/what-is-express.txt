@@ -64,3 +64,25 @@ So we don't have to worry about error handling in our business logic or in our c
 or in anywhere except the global error handling middleware.
 We can simply send the errors down to the error handler which will then decide what to with the errors.
 
+######### HANDLING ERRORS OUTSIDE OF EXPRESS.JS #########
+
+################## UNHANDLED REJECTIONS #################
+Errors can occur outside of Express.js like when an error occurs
+during mongodb database connection express can not handle that error.
+Imagine the database is down for some reason or for some reason we can not log in.
+######## This is not he case anymore right now it gives this error MongoServerError: bad auth : Authentication failed. ##########
+In that situation we get an error that says :unhandled promise rejection.
+This means that somewhere in our code there was a promise that got rejected
+but that rejection has not been handled anywhere.
+To handle this rejection we could go to the code block where we are handling the database connection
+and add a catch block so that we handle errors that occur there.
+But in a bigger application it can become a difficult to keep track of all the
+promises that might become rejected at some point.
+
+################## UNCAUGHT EXCEPTIONS #################
+All errors that occur in our synchronous code but are not handled anywhere are called
+uncaught exception.
+Let's pretend we are trying to log some variable that doesn't exist
+console.log(doesNotExist)
+We get a ReferenceError and stack trace printed to the console
+We can fix it similarly to the unhandled rejections
