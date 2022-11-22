@@ -1,5 +1,6 @@
 const express = require("express");
 const tourController = require("../controllers/tourController");
+const authController = require("../controllers/authController");
 
 // !Creating a router for each resource
 // We have created a new router and saved it to a variable.
@@ -77,7 +78,13 @@ router
   .route("/")
   // because the tourRouter already only runs on "/api/v1/tours"
   // So the root of the tourRouter is already "/api/v1/tours"
-  .get(tourController.getAllTours)
+  // *Protecting routes
+  // We don't allow users to see all tours without a login
+  // We run the protect middleware on routes we want to protect.
+  // If the user is authenticated then the next middleware will run
+  // If the use is not authenticated then there will be an error and
+  // the next middleware in the stack will not run.
+  .get(authController.protect, tourController.getAllTours)
   .post(
     // Here we have 2 middlewares in the same post() method
     // Which is fine it runs them from right to left
@@ -108,6 +115,17 @@ router
   .route("/:id")
   .get(tourController.getTour)
   .patch(tourController.updateTour)
-  .delete(tourController.deleteTour);
+  .delete(
+    authController.protect,
+    // To implement authorization we use the .restrictTo() method
+    // We will pass in the user roles that are authorized to interact with this resource.
+    // In this case deleting a tour.
+    // admins and lead-guides can delete tours but not normal guides or users
+    // *This normally doesn't work because express needs to call this middleware function when this route gets a request
+    // *But right now we are calling the function
+    // *To fix restrictTo returns a function and we use that function as middleware.
+    authController.restrictTo("admin", "lead-guide"),
+    tourController.deleteTour
+  );
 
 module.exports = router;

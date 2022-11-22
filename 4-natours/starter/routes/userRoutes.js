@@ -1,6 +1,7 @@
 const express = require("express");
 
-const userController = require("../controllers/userControllerBeforeRefactor");
+const userController = require("../controllers/userController");
+const authController = require("../controllers/authController");
 
 // !Creating a router for each resource
 // We have created a new router and saved it to a variable.
@@ -40,15 +41,21 @@ const router = express.Router();
 // But with the route method we can chain the post method as well
 // because they have the same API end point
 
+// /signup route doesn't follow the REST philosophy
+// normally in REST philosophy name of the url has nothing to do with the cation that is being performed
+// but here we are signing the user in so the url is related to the action.
+// But we can have some other end point that don't follow it if we need to
+router.post("/signup", authController.signup);
+router.post("/login", authController.login);
 router
   .route("/")
   .get(userController.getAllUsers)
   .post(userController.createUser);
 
-router
-  .route("/:id")
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+// router
+//   .route("/:id")
+//   .get(userController.getUser)
+//   .patch(userController.updateUser)
+//   .delete(userController.deleteUser);
 
 module.exports = router;

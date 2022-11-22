@@ -46,7 +46,7 @@ class APIFeatures {
     // { duration: {$gte: 5 } }
     // But we get something like this when we log this
     // { duration: {gte: 5 } }
-    // Solution is to add the $sign before every operator
+    // Solution is to add the $ sign before every operator
 
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replaceAll(
@@ -74,7 +74,7 @@ class APIFeatures {
       this.query = this.query.sort(sortBy);
     } else {
       // In case the user doesn't specify a sort we will still add a default sort the to query
-      this.query = this.query.sort("-createdAt");
+      this.query = this.query.sort("-createdAt _id");
     }
     return this;
   }

@@ -65,6 +65,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     .sortQuery()
     .limitFields()
     .paginate();
+  // console.log(features.query);
   const tours = await features.query;
 
   // *2. We can use special mongoose methods

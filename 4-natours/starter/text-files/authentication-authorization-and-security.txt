@@ -1,0 +1,73 @@
+Authentication, authorization and is all about user signing up, logging in 
+and accessing pages or routes that we grant them permission to do so.
+So it is really all about the users 
+
+USER AUTHENTICATION AND AUTHORIZATION WITH JWT TOKENS
+Whole workflow of logging users in and allowing the mto interact with certain protected resources
+that non-logged in users can not access.
+There are many authentication methods out there but the one we are going to use is
+a very modern, simple and secure approach called JSON WEB TOKENS (JWT) 
+JWT are a stateless solution for authentication, so there is no need to store any 
+session state on the server, which is perfect for RESTful APIs.
+The most widely used alternative to JWT is to just store the users logging state
+on the server using session, but this doesn't follow the principle of RESTful APIs
+which must be stateless.
+
+HOW AUTHENTICATION WORKS WITH JWT
+1. User's client starts by making a post request with the username/email and the password.
+2. Application then checks if the user exist and if the password is correct.
+Then a unique JWT only for that user is created using a secret string that is stored on the server.
+JWT itself is just a long string mae out of random characters.
+3. The server sends that JWT back to the client which will store it in either cookie or in local storage.
+Just like this the users is authenticated and logged in to our application
+without leaving any state on the server. So the server doesn't know which users are actually logged in.
+4. Then each time the users want to access a protected part like his user profile data
+user sends the JWT along with the request 
+5. Once the request hit the server our application will verify if the JWT is valid
+6. If the JWT is valid then the requested data will be sent,
+if it is not valid there will be an error telling the user that he is not allowed to access that resource.
+!!!!!!!!!!! All this communication must happen over HTTPS. HTTPS is secure, encrypted HTTP !!!!!!!!!!!!
+in order to prevent anyone that tries to get access to passwords or JWTs.
+
+HOW A JWT LOOKS LIKE
+It looks like a bunch of gibberish but it is essentially a encoding string made of 3 parts
+ The header, the payload, and the signature
+1. The header is meta data about the token itself
+2. The payload is the data that we can encode into the token (bigger the data bigger the JWT will be).
+These two are just plain text that will get encoded but not encrypted
+so anyone will be able to decode and read them. So we can not store any sensitive data in here.
+But thats not a problem because in the third part things really get interesting.
+3. The signature is created using the header, the payload and the secret that is saved on the server.
+This whole process is called signing the JWT 
+The signing algorithm takes the header, the payload and the secret to create a unique signature.
+4. Together with the header+payload and the signature forms the JWT.
+
+Once the sever receives a JWT it needs to verify if the user is really who he is claiming to be.
+So it will verify if no one change the header or the payload data of the token.
+
+5. Once the JWT is received the verification will takes its header and payload
+and together with the secret that is still saved in the server basically create a test signature
+and compare the test signature and the original signature if they are the same it mean
+that the header and the payload have not been modified.
+
+!!!!!!!! AUTHENTICATION IS REALLY HARD TO GET IT RIGHT !!!!!!!!!!!!
+Many tutorials out there make many serious mistakes and over simplify things that should not be simplified
+Not all tutorials are bad though Jonas' spent weeks researching best practices and refining and improving
+his code to make the authentication we are going to implement as good as possible for beginners
+that is because we need to be really, really, really careful  when writing this part of the application
+because our users' data  is at stake here and the trust of the company who runs the application is at stake as well.
+So implementing authentication is a real responsibility where you should NOT make any mistakes at all.
+There are some libraries out there that can help us implement authentication and authorization.
+The most well knowns one is called passport, but even as library like that doesn't take all the work
+and the responsibility away from you.
+In this case we are going to implement the whole logging, protecting, and authorization process ourselves, except the JWT implementation.
+
+PROTECTED ROUTES
+Protected routes are routes that can only be accessed when logged in
+There are multiple steps tp implement route protecting
+In one of the steps we need to send a header that contains info
+And that header has standards
+1. We always us a header called Authorization
+2. The value of that header should always start with Bearer (because we bear, possess, this token)
+3. And then the value of the token after a space
+4. It should look like this: Authorization: Bearer adawdawlşlş45jk563kl45j34lkrrasekl

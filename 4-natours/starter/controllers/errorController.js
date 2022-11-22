@@ -4,6 +4,7 @@ const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}.`;
   return new AppError(message, 400);
 };
+
 const handleDuplicateErrorDB = (err) => {
   const entry = Object.entries(err.keyValue)[0];
   const key = entry[0];
@@ -22,6 +23,17 @@ const handleValidationErrorDB = (err) => {
   const message = `Invalid input data. ${errors.join(". ")}`;
   return new AppError(message, 400);
 };
+
+const handleJWTError = () => {
+  const message = "You are not logged in. Please log in.";
+  return new AppError(message, 401);
+};
+
+const handleJWTExpiredError = () => {
+  const message = "You login has expired. Login again";
+  return new AppError(message, 401);
+};
+
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -93,6 +105,14 @@ module.exports = (err, req, res, next) => {
     // Handling Validation Errors
     if (err.name === "ValidationError") {
       error = handleValidationErrorDB(err);
+    }
+
+    if (err.name === "JsonWebTokenError") {
+      error = handleJWTError();
+    }
+
+    if (err.name === "TokenExpiredError") {
+      error = handleJWTExpiredError();
     }
     sendErrorProd(error, res);
   }

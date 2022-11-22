@@ -19,7 +19,7 @@ const dotenv = require("dotenv");
 // Then gracefully closing the application
 process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION! Shutting down...");
-  console.log(err.name, err.message);
+  console.log(err);
   // ! We don't need the server because uncaught exceptions happen only in synchronous code
   // ! and anything t odo with server is async
   // server.close(() => {
@@ -106,7 +106,7 @@ const server = app.listen(port, () => {
 // We can subscribe to that event just like this:
 // * unhandledRejection event allows us to handle all the errors that occur in async code
 process.on("unhandledRejection", (err) => {
-  console.log(err.name, err.message);
+  console.log(err);
   console.log("UNHANDLED REJECTION! SHUTTING DOWN...");
   // If we can't connect to the database because of the rejected error
   // we can not do much so we will shut down the application.
@@ -134,4 +134,4 @@ process.on("unhandledRejection", (err) => {
 // ? UNCAUGHT EXCEPTIONS
 // Uncaught exception handler is above because it needs to be before any code that can cause a uncaught exception error.
 
-console.log(x);
+// console.log(x);

@@ -153,7 +153,7 @@ const tourSchema = new mongoose.Schema(
             // .getUpdate() method Returns the current update operations as a JSON object.
             // We have the $set operation and in there we have access to the price and the priceDiscount
             // With this method we have to send both the price and the priceDiscount
-            // with the body of the request when we want to update the priceDiscount
+            // in the body of the request when we want to update the priceDiscount
             // otherwise it won't work.
             console.log("0", this.getUpdate());
             console.log("1", this.getUpdate().$set.priceDiscount);
@@ -321,7 +321,7 @@ tourSchema.post("save", function (doc, next) {
 // Let's say that we can have secret tours in our database
 // like for tours that are offered only internally or for a very small VIP group that the public shouldn't know about.
 // Since these tours our secret we don't want these tours to ever appear at the result outputs.
-// So we are going to create a secret tour field and query only for tours tha tours not secret.
+// So we are going to create a secret tour field and query only for tours that are not secret.
 // !This has a problem we can not query for secret fields with the code base we have right now.
 // !So this is more for learning purposes.
 tourSchema.pre(/^find/, function (next) {
