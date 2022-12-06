@@ -1,5 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
+const rateLimit = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
 
 // Express module return a function and we run that function
 // and save its results to a variable called app
@@ -19,6 +21,7 @@ const userRouter = require("./routes/userRoutes");
 // The data from the body is added to the request object.
 // We need to use app.use to use middleware
 app.use(express.json());
+app.use(cookieParser());
 
 // We use this middleware for serving static files
 // like images, html, etc.
@@ -33,6 +36,23 @@ app.use(express.static(`${__dirname}/public`));
 // We are using the environment variable to only use this logging middleware
 // when we are in the development environment
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
+
+// ? Rate Limiting
+// Rate limit is a function that receives options
+// We can define how many request per IP we are going to allow
+// in a certain amount of time.
+// * rateLimit returns a function that we can use as middleware
+const limiter = rateLimit({
+  // Max number of request allowed per IP
+  max: 100,
+  // Time window the request can be made
+  // We set the time window to 1 hour
+  windowMs: 60 * 60 * 1000,
+  // If the limit is crossed by a certain IP they get an error message
+  message: "Too many requests from this IP, please try again in an hour!",
+});
+
+app.use("/api", limiter);
 
 // *Creating our own middleware
 // We need to the app.use to use the middleware

@@ -15,7 +15,7 @@ const dotenv = require("dotenv");
 // This time we are listening for the uncaughtException event
 // What we are doing inside the callback is very similar as well
 // We want to log the error so that it shows up in the logs in our server
-// o that we can fix the error.
+// so that we can fix the error.
 // Then gracefully closing the application
 process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION! Shutting down...");

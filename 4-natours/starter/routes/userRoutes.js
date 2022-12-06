@@ -47,6 +47,19 @@ const router = express.Router();
 // But we can have some other end point that don't follow it if we need to
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
+
+router.patch(
+  "/updatePassword",
+  authController.protect,
+  authController.updatePassword
+);
+
+router.patch("/updateMe", authController.protect, userController.updateMe);
+router.delete("/deleteMe", authController.protect, userController.deleteMe);
+
+router.post("/forgotPassword", authController.forgotPassword);
+// This is path because only the users password is modified
+router.patch("/resetPassword/:token", authController.resetPassword);
 router
   .route("/")
   .get(userController.getAllUsers)

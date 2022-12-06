@@ -145,7 +145,7 @@ const tourSchema = new mongoose.Schema(
           // This keywords doesn't points to the document
           // But we can get the operation from this.op
           // I tried with this.op===findOneAndUpdate
-          // But even though i updated the document the this.op is equal to find
+          // But even though I updated the document this.op is equals to find
           // it defaults to find because of how mongoose works
           // If we use the method below it will work both for create and findOneAndUpdate
           console.log(this.op);

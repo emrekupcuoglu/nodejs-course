@@ -1,0 +1,74 @@
+This is not complete and security needs further research
+
+Compromised Database
+Let's say we have a compromised database meaning an attacker gained access to our database.
+
+This is an extremely severe problem but to prevent even bigger problems
+we must always encrypt passwords and password reset tokens.
+This way the attacker at least can not steal users' passwords and also can not reset them.
+*Strongly hash passwords using bcrypt or argon2 or another tool
+*Strongly has password reset tokens using sha256
+
+Brute Force Attack
+In a brute force attack the attacker basically tries to guess a password by trying
+millions of passwords until they find the right one.
+-We can make the login request really slow to slow down the attacker,
+instead of guessing 500 million passwords a second now they can only guess a few.
+-We can also implement rate limiting which limits the number of request coming from one IP.
+-We can also limit the amount of times a user can try to login. For example after
+10 failed attempts user would have to wait an hour before he can try again.
+*Use bcrypt (to make logins slow)
+*Implement rata limiting (express-rate-limit)
+*Implement maximum login attempts
+
+Cross Site Scripting (XSS) Attacks
+In this attack the attacker tries to inject scripts into our page
+to run his malicious code. This is especially dangerous on the client side
+because it allows the attacker to read the local storage, 
+which is why we should never the JWT in local storage, instead it should be stored
+in an HTTP only cookie that makes it so the browser can send and receive the cookie
+but can not access or modify it in any way. This makes it hard for the attacker to steal the JWT.
+On the backend side in order to prevent XSS attacks we should sanitize the user input data and
+set some special HTTP headers which makes these attacks a bit more difficult to happen.
+Express doesn't come with these best practices out of the box so we are going to use a middleware
+to set all these headers.
+*Store JWT in HTTPOnly cookies
+*Sanitize user data
+*Set special headers (helmet package)
+
+Denial-of-Service (DoS) Attacks
+This attack happens when the attacker send so many requests to a server that
+it breaks down and the application becomes unavailable.
+Rate limiting is a good solution for this as well
+We should also limit the amount of data that can be sent in a body in a post or patch request.
+We should also avoid using so-called evil regular expressions in our code.
+These are regular expressions that take an exponential time to run for non-matching inputs
+and they can be exploited to bring our entire application down.
+*Implement rate limiting
+*Limit body payload (in body-parser)
+*Avoid using evil regular expressions
+
+NoSQL Query Injection Attacks
+Query injection happens when an attacker instead of inputting valid data
+injects some query in order to create query expressions that are gonna translate to true.
+For example to be logged in even without proving a valid username or password.
+Complex and google it to learn more but using mongoose is actually a pretty good
+strategy for preventing these kinds of attacks because a good schema that forces each value
+to have a well defined data tab. Which then effectively makes this type of attack very difficult
+to execute. However it is always a good idea to still sanitize input data, just to be sure.
+
+OTHER BEST PRACTICES AND SUGGESTIONS
+*Always use HTTPS
+Other wise anyone can listen and steal JWTs
+*Create random password reset tokens with expiry dates
+NOT generated from dates or something like that
+*Deny access to the JWT after a password change
+*Don't commit sensitive data to Git
+*Don't send error details to the client
+*Prevent Cross-Site-Request-Forgery (csurf package)
+*Require re-authentication before a high-value action
+*Implement a blacklist of untrusted JWT
+*Confirm user email after first creating account
+*Keep user logged in with refresh tokens
+*Implement two-factor authentication (2FA)
+*Prevent parameter pollution causing unCaught Exceptions
