@@ -95,7 +95,26 @@ exports.getTour = catchAsync(async (req, res, next) => {
   // findById finds the document with the matching id
   // It is a shorthand for the findOne method with a filter object:
   // findOne({_id:req.params.id})
-  const tour = await Tour.findById(req.params.id);
+  // * We use the .populate() method for referencing
+  // populate populates, basically filles, the field called guides in our model
+  // The guides field only contains the reference and with
+  // populate we are going to fill it with actual data but only in the query not in the database.
+  // populate takes the name of the field we want to populate
+  // Instead of passing as string with the name of the filed we can also pass an options object
+  // and specify which field we want to show up
+  // ! Using populate creates a new query behind the scenes
+  // If you do it once or twice in a small application then that small hit on performance is not a problem at all.
+  // But in a huge application with tons of populates all over the places then that might indeed have some effect on performance.
+  // This works only for this route if we wanted it to work for getAllTours can either copy it and use it in that handler as well
+  // Or create a query middleware which is the better choice in this case.
+  // const tour = await Tour.findById(req.params.id).populate({
+  //   path: "guides",
+  //   select: "-__v -passwordChangedAt",
+  // });
+  const tour = await Tour.findById(req.params.id).populate({
+    path: "reviews",
+    select: "-__v",
+  });
 
   // Checking if tour exist
   if (tour === null) {

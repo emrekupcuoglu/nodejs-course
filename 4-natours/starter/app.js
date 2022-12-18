@@ -1,6 +1,10 @@
 const express = require("express");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 
 // Express module return a function and we run that function
@@ -11,6 +15,7 @@ const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
+const reviewRouter = require("./routes/reviewRoutes");
 
 // 1. MIDDLEWARES
 // middleware
@@ -20,9 +25,42 @@ const userRouter = require("./routes/userRoutes");
 // The step the request goes through in this example is really simple
 // The data from the body is added to the request object.
 // We need to use app.use to use middleware
-app.use(express.json());
+// ? Set Security HTTP Headers
+app.use(helmet());
+
+// ? Body parser, reading data from body into req.body
+// We can use the limit option to limit the amount of data that comes in the body
+app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
+// ? Data Sanitization Against NoSQL Query Injection Attacks
+// This middleware looks at req.body, req.query, req.params and removes any dollar sign ($) and dot (.)
+//Because that is how mongoDB operators are written with $ and .
+app.use(mongoSanitize());
+
+// ? Data Sanitization Against XSS Attacks
+// This middleware will clean any malicious HTML
+// For example <script> will be converted into &lt;script>
+app.use(xss());
+
+// ? Preventing Data Pollution
+// This prevents duplicate parameters in the query string
+// We can also whitelist some parameters we want
+// So that we can have duplicate parameters when we need
+app.use(
+  hpp({
+    whitelist: [
+      "duration",
+      "ratingsQuantity",
+      "ratingsAverage",
+      "maxGroupSize",
+      "difficulty",
+      "price",
+    ],
+  })
+);
+
+// ? Serving static files
 // We use this middleware for serving static files
 // like images, html, etc.
 // When it can not found a route specified in any of our routes
@@ -270,6 +308,7 @@ app.use((req, res, next) => {
 // We are mounting the router on a new route
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
 // ? Handling Unhandled Routes
 // If a route reaches here past the tourRouter and the userRouter

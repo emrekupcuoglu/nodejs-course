@@ -79,7 +79,6 @@ app.use((req, res, next) => {
 
 // We use the postman to test this API
 
-
 // ?What is an API?
 // API stands for: Application Programming Interface
 // It is a piece of software that can be used by another piece of software
@@ -166,17 +165,17 @@ app.use((req, res, next) => {
 // Let's say that this is a data that we have in our database for a GET request to
 // https://www.natours.com/tours/5
 const JSON0 = {
-  "id": 5,
-  "tourName": "The Park Camper",
-  "rating": "4.9",
-  "guides": [
+  id: 5,
+  tourName: "The Park Camper",
+  rating: "4.9",
+  guides: [
     {
-      "name": "Steven Miller",
-      "role": "Lead Guide",
+      name: "Steven Miller",
+      role: "Lead Guide",
     },
     {
-      "name": "Lisa Brown",
-      "role": "Tour Guide",
+      name: "Lisa Brown",
+      role: "Tour Guide",
     },
   ],
 };
@@ -189,22 +188,21 @@ const JSON0 = {
 // then we put our original data into a new object called data
 // There are other standards for response formatting like:
 // JSON:API or ODATA JSON Protocol
-const JSEND =
-{
-  "status": "data",
+const JSEND = {
+  status: "data",
 
-  "data": {
-    "id": 5,
-    "tourName": "The Park Camper",
-    "rating": "4.9",
-    "guides": [
+  data: {
+    id: 5,
+    tourName: "The Park Camper",
+    rating: "4.9",
+    guides: [
       {
-        "name": "Steven Miller",
-        "role": "Lead Guide",
+        name: "Steven Miller",
+        role: "Lead Guide",
       },
       {
-        "name": "Lisa Brown",
-        "role": "Tour Guide",
+        name: "Lisa Brown",
+        role: "Tour Guide",
       },
     ],
   },
@@ -233,7 +231,7 @@ const getAllTours = (req, res) => {
   res.status(200).json({
     status: "success",
     requestedAt: req.requestTime,
-    // results is not a part of the JSEND specification but it is nice to bea able to see the number of results on the client side 
+    // results is not a part of the JSEND specification but it is nice to bea able to see the number of results on the client side
     results: toursData.length,
     data: {
       // name of this property is tours because the name of the API end point is tours
@@ -246,7 +244,7 @@ const getTour = (req, res) => {
   // req.params are where all the parameters of (variables) we define here are stored
   console.log(req.params);
   const id = Number(req.params.id);
-  const tour = toursData.find(el => el.id === id);
+  const tour = toursData.find((el) => el.id === id);
 
   if (!tour)
     return res.status(404).json({ status: "Fail", message: "Invalid ID" });
@@ -260,7 +258,6 @@ const getTour = (req, res) => {
 };
 
 const createTour = (req, res) => {
-
   const newID = toursData[toursData.length - 1] + 1;
   // newTour is the req.body + the newID
   // We can use Object.assign for this
@@ -282,7 +279,8 @@ const createTour = (req, res) => {
           tour: newTour,
         },
       });
-    });
+    }
+  );
 
   // We always have to send back something in order to finish the
   // so called request - response cycle.
@@ -295,8 +293,8 @@ const updateTour = (req, res) => {
   res.status(200).json({
     status: "Success",
     data: {
-      tour: "<Updated Tour>"
-    }
+      tour: "<Updated Tour>",
+    },
   });
 };
 
@@ -310,8 +308,8 @@ const deleteTour = (req, res) => {
   res.status(204).json({
     status: "Success",
     data: {
-      tour: null
-    }
+      tour: null,
+    },
   });
 };
 
@@ -319,7 +317,7 @@ const getAllUsers = (req, res) => {
   // 500 is for internal server error
   res.status(500).json({
     status: "error",
-    message: "This route is not yet defined!"
+    message: "This route is not yet defined!",
   });
 };
 
@@ -327,7 +325,7 @@ const getUser = (req, res) => {
   // 500 is for internal server error
   res.status(500).json({
     status: "error",
-    message: "This route is not yet defined!"
+    message: "This route is not yet defined!",
   });
 };
 
@@ -335,7 +333,7 @@ const createUser = (req, res) => {
   // 500 is for internal server error
   res.status(500).json({
     status: "error",
-    message: "This route is not yet defined!"
+    message: "This route is not yet defined!",
   });
 };
 
@@ -343,7 +341,7 @@ const updateUser = (req, res) => {
   // 500 is for internal server error
   res.status(500).json({
     status: "error",
-    message: "This route is not yet defined!"
+    message: "This route is not yet defined!",
   });
 };
 
@@ -351,7 +349,7 @@ const deleteUser = (req, res) => {
   // 500 is for internal server error
   res.status(500).json({
     status: "error",
-    message: "This route is not yet defined!"
+    message: "This route is not yet defined!",
   });
 };
 
@@ -422,22 +420,11 @@ tourRouter
 //   console.log("Hello from the middleware 2");
 //   next();
 // });
-tourRouter
-  .route("/:id")
-  .get(getTour)
-  .patch(updateTour)
-  .delete(deleteTour);
+tourRouter.route("/:id").get(getTour).patch(updateTour).delete(deleteTour);
 
-userRouter
-  .route("/")
-  .get(getAllUsers)
-  .post(createUser);
+userRouter.route("/").get(getAllUsers).post(createUser);
 
-userRouter
-  .route("/:id")
-  .get(getUser)
-  .patch(updateUser)
-  .delete(deleteUser);
+userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
 
 // !To use tourRouter we have to add it to our middleware stack
 // Because tourRouter is a real middleware
@@ -455,11 +442,4 @@ app.use("/api/v1/users", userRouter);
 const port = 3000;
 app.listen(port, () => {
   console.log("app running on port 3000");
-})
-
-
-
-
-
-
-
+});

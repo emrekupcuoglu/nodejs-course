@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const validator = require("validator");
+// This was required for embedding the user into the tour documents
+// const User = require("./userModel");
 
 // ?SCHEMA
 // We pass in the schema as an object ot the mongoose.Schema() method
@@ -230,6 +232,72 @@ const tourSchema = new mongoose.Schema(
       // so that the normal tours doesn't have an extra field to occupy space on the database
       // and use the query operator $exist to check if the secretTour field exist
     },
+    // mongoDB supports geo-spatial data out of the box
+    // Geo-spacial data is data that describes places on earth using longitude and latitude
+    // We can describe simple points or we can also describe complex geometries like lines,
+    // polygons or even multi polygons.
+    startLocation: {
+      // GeoJSON
+      // mongoDB uses a special data format called geoJSON in order to specify
+      // geo-spatial data.
+      // this object we specify is not for the schema type options this time
+      // but this object this time really is an embedded object.
+      // In order for this object to get recognized as geo-spatial JSON
+      // we need the type and the coordinates properties.
+      // each of these sub-fields is going to get their own schema type options
+      type: {
+        type: String,
+        // We can specify multiple geometries in mongoDB
+        // the default one is always point.
+        // We can also specify other options like line or polygon
+        default: "Point",
+        // But in this case the only possible chose should be point
+        // so let's make that the only possible option by using an enum
+        enum: ["Point"],
+      },
+
+      // This means we are expecting an array of numbers
+      // The first item is the longitude and the second item is the latitude
+      // This is a bit counterintuitive but this is how GeoJSON works
+      // If you were to go to google maps you would see the latitude first and longitude second.
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    // ? Embedding a new document
+    // We use an array when we want to create a new document inside a document
+    // locations is similar to the startLocation but it is an array
+
+    //
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    // EMBEDDING
+    // We get the guides array from the  POST request then use a pre hook to
+    // embed the guides into the tour document.
+    // guides: Array,
+
+    // REFERENCING
+    // with referencing we need to also populate it. Populating is always done in a query so we have done it in the tourController
+    guides: [
+      {
+        // This means that we expect the types of elements in the guides array to be a mongoDB ID
+        type: mongoose.Schema.Types.ObjectId,
+        // This is where the magic happens behind the scenes because it is here where we say the reference should be user.
+        // This is how we establish references between different datasets in mongoose.
+        ref: "User",
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -266,7 +334,7 @@ const tourSchema = new mongoose.Schema(
 // because this virtual property will be created each time
 // we get some data out of the data base
 // The get function here is called a getter
-// This is not hte same get as the one we use for routing
+// This is not the same get as the one we use for routing
 // that one comes from the express.js and this one comes from mongoose
 // and they serve different purposes
 // Get takes a function as an argument and it can not be an arrow function
@@ -275,6 +343,33 @@ const tourSchema = new mongoose.Schema(
 // !We can NOT use this virtual property in a query because they are technically not part of the database
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
+});
+
+// ? Virtual Populate
+// We have parent referencing on the review documents but when we want to get reviews belonging to a tour we stumble into a problem
+// We can not do child referencing because reviews might get too big and exceed the 16 megabytes max size
+// So we user an pretty advanced mongoose feature virtual populate to fix this issue
+
+// First argument is the name of the virtual field
+// Second argument is an options object
+tourSchema.virtual("reviews", {
+  // reference to the Model we want to reference.
+  ref: "Review",
+  // We meed to specify the names of the fields in order to connect the two datasets.
+  // For this we need to specify 2 fields, the foreignField and the localField
+  // foreignField is the name of the field in the other model, review model in this case
+  // where the reference to the current model is stored which is the tour field in this case.
+  // In our review model we have a field called tour where the id of the tour is stored.
+  foreignField: "tour",
+  // We need the same for the current model as well
+  // localField is where that id is actually stored here in this current Tour model
+  // The "_id" which is how it is called in the local model is called tour in the foreign model
+  localField: "_id",
+
+  // ! This is how I understand virtual populate works
+  // mongoose takes the localField and uses it to query for it in the reference model's field
+  // Like this: Review.find({tour:_id}) and populates the tour based on this
+  // This similar to querying it manually but there might be performance benefits
 });
 
 // ?MIDDLEWARE
@@ -302,6 +397,26 @@ tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+// ? EMBEDDING
+// We will not use embedding instead we will use referencing because there are drawbacks to using embedding in this case.
+// Imagine a tour guide updates his email address or changes their role from guide to lead guide.
+// Each time one of these changes happen you would need to check if a tour has that user as a guide and if so update the tour as well
+// tourSchema.pre("save", async function (next) {
+// map method will assign the result of each iteration to the new element in the guides array
+// We have an async function that returns a promise. So the guides array is an array full of promises
+// ! mongoose do NOT return promises by default.It return queries which are thenable
+// ! We need a promise for promise.all this code works but throws an error that doesn't stop execution but an error non the less
+// ! We can turn it into a promise using the .exec() method
+// ! MONGOOSE RECOMMENDS USING .EXEC() WITH AWAIT
+// const guidesPromises = this.guides.map((id) => User.findById(id).exec());
+// ! or we can use an async function inside the .map() method and await it inside the map method
+// ! this returns a promise that we can use in Promise.all().
+// const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+
+// this.guides = await Promise.all(guidesPromises);
+// next();
+// });
 
 // In the case of a post middleware the callback function has access
 // to the document that was just saved to the database as well as the next function.
@@ -332,6 +447,15 @@ tourSchema.pre(/^find/, function (next) {
   // console.log(this);
   // Checking how long it takes to execute the current query
   this.start = Date.now();
+  next();
+});
+
+// For Referencing Documents
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "guides",
+    select: "-__v -passwordChangedAt",
+  });
   next();
 });
 

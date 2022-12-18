@@ -8,5 +8,6 @@
     "nodemon",
     "ODATA",
     "Thenables"
-  ]
+  ],
+  "cSpell.ignoreWords": ["OWASP"]
 }

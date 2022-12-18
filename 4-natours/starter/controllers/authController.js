@@ -190,12 +190,12 @@ exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
     // we need to include role because we set select to false in the schema
+    // We did this on the protect handler above
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError("You do not have permission to perform this action!", 403)
       );
     }
-    console.log(res);
     next();
   };
 

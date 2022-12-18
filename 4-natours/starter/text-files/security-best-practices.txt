@@ -72,3 +72,25 @@ NOT generated from dates or something like that
 *Keep user logged in with refresh tokens
 *Implement two-factor authentication (2FA)
 *Prevent parameter pollution causing unCaught Exceptions
+
+Setting HTTP Headers with the Helmet Package
+helmet package is kind of a standard in express development.
+Everyone that is building an express app should use this package
+because Express.js don't use all these security best practices out of the box.
+
+Parameter Pollution Using the HPP package
+In our app we are only expecting to sort by the duration or at least to sort only by one field
+But if in the query string we send the sort twice like this: https://natours.com?sort=duration&sort=price
+we will get an error. Error happens because we are expecting a string but because we have set it twice
+Express.js will create an array and because we are expecting a string not an array we get an error.
+Other apps might handle it differently so always check with your app architecture
+We will use the HPP package to prevent this.
+HPP stands for HTTP Parameter Pollution
+Attacker can use HPP to cause DoS causing a TypeError (expecting a string and getting an array or object for example)
+Attacker can cause unintended data to be saved in the database e.g. firstName=["John","John"] instead of firstName="John"
+Attacker can use HPP to bypass input validations applied on strings in our own code, WAF, browser filters.
+For example firstName + lastName should be equal to "John Doe" but attacker can use HPP to bypass
+input validation like this: ["John", "John"] + "Doe" results in "John,John Doe
+
+*To fight this check expected type as part of the validation
+*Implement robust error handling mechanism using try/catch, domain, and cluster

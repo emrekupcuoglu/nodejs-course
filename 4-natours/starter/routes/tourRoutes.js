@@ -1,6 +1,7 @@
 const express = require("express");
 const tourController = require("../controllers/tourController");
 const authController = require("../controllers/authController");
+const reviewRouter = require("./reviewRoutes");
 
 // !Creating a router for each resource
 // We have created a new router and saved it to a variable.
@@ -55,6 +56,27 @@ const router = express.Router();
 // app.get("/api/v1/tours", getAllTours);
 // But with the route method we can chain the post method as well
 // because they have the same API end point
+
+// ? Nested Routes
+// Right now we are calling the review controller in the tour route this doesn't make much sense
+// We will fix this later
+// We will use an advanced express feature called mergeParams to fix this
+// router
+//   .route("/:tourId/reviews")
+//   .post(
+//     authController.protect,
+//     authController.restrictTo("user"),
+//     reviewController.createReview
+//   );
+
+// ? Nested Routes with Express.js
+// router.use("/:tourId/reviews",reviewRouter) means that the tourRouter should use the review router in case it ever encounters a route like this
+// This is just like how we did it in the app.js
+// In there we say that it should use this router if it ever encounters a route that we specify it is the same here as well
+// But there is one piece missing, because right one the reviewRouter doesn't have access to the tourId parameter
+// We need to enable the reviewRouter to get access to the tourId parameter.
+// We have done this in the reviewRouter
+router.use("/:tourId/reviews", reviewRouter);
 
 // ?ALIASING
 // Let's say that we have a route that is commonly visited
