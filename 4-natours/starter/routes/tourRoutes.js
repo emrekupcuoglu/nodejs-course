@@ -91,7 +91,13 @@ router
   .get(tourController.aliasTopTours, tourController.getAllTours);
 
 router.route("/tour-stats").get(tourController.getTourStats);
-router.route("/monthly-plan/:year").get(tourController.getMonthlyPlan);
+router
+  .route("/monthly-plan/:year")
+  .get(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide", "guide"),
+    tourController.getMonthlyPlan
+  );
 
 router
   // Instead of:
@@ -106,13 +112,15 @@ router
   // If the user is authenticated then the next middleware will run
   // If the use is not authenticated then there will be an error and
   // the next middleware in the stack will not run.
-  .get(authController.protect, tourController.getAllTours)
+  .get(tourController.getAllTours)
   .post(
     // Here we have 2 middlewares in the same post() method
     // Which is fine it runs them from right to left
     // We don't need the checkBody anymore so we comment it out
 
     // tourController.checkBody,
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide"),
     tourController.createTour
   );
 
@@ -136,7 +144,11 @@ router
 router
   .route("/:id")
   .get(tourController.getTour)
-  .patch(tourController.updateTour)
+  .patch(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide"),
+    tourController.updateTour
+  )
   .delete(
     authController.protect,
     // To implement authorization we use the .restrictTo() method

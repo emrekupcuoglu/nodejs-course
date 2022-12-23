@@ -47,28 +47,41 @@ const router = express.Router();
 // But we can have some other end point that don't follow it if we need to
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
-
-router.patch(
-  "/updatePassword",
-  authController.protect,
-  authController.updatePassword
-);
-
-router.patch("/updateMe", authController.protect, userController.updateMe);
-router.delete("/deleteMe", authController.protect, userController.deleteMe);
-
 router.post("/forgotPassword", authController.forgotPassword);
 // This is path because only the users password is modified
 router.patch("/resetPassword/:token", authController.resetPassword);
+
+// ? After this point we need the authController.protect middleware on all routes
+// We can add them to all of the routes manually or we can do better
+// Because the protect is a middleware and middlewares are run in sequence
+// and the router that we have created at the beginning is like a middle application
+// and just like with the regular app we can use middleware on this router as well.
+// This will run the authController.protect middleware on all of the routes starting from now
+// This middleware won't run for the code above because middleware runs in sequence.
+router.use(authController.protect);
+
+router.patch("/updatePassword", authController.updatePassword);
+router.get(
+  "/me",
+  authController.protect,
+  userController.getMe,
+  userController.getUser
+);
+router.patch("/updateMe", userController.updateMe);
+router.delete("/deleteMe", userController.deleteMe);
+
+// Because all the routes below this require admin access
+// we used a middleware instead of adding it manually to all routes
+router.use(authController.restrictTo("admin"));
 router
   .route("/")
   .get(userController.getAllUsers)
   .post(userController.createUser);
 
-// router
-//   .route("/:id")
-//   .get(userController.getUser)
-//   .patch(userController.updateUser)
-//   .delete(userController.deleteUser);
+router
+  .route("/:id")
+  .get(userController.getUser)
+  .patch(userController.updateUser)
+  .delete(userController.deleteUser);
 
 module.exports = router;

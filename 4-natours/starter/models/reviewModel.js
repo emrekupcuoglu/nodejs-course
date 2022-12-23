@@ -1,6 +1,4 @@
 const mongoose = require("mongoose");
-const User = require("./userModel");
-const Tour = require("./tourModel");
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -19,6 +17,9 @@ const reviewSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // We did reference the tours in the review document using the parent referencing in the course
+    // but i think irt would be better to embed the tours into the review because we would not query a review without the tour
+    // and a review can be for only one tour
     tour: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tour",
@@ -42,7 +43,8 @@ reviewSchema.pre(/^find/, function (next) {
     path: "user",
     select: "name photo",
   });
-  // We have decided not to populate the reviews with tour because it causes an unnecessary populate chaining and it is not good for performance
+  // We have decided not to populate the reviews with tour because it causes an unnecessary populate chaining and it is not good for performance.
+  //Because we have the tour being populated with reviews but the reviews also get populated with the tour again and also with the user, the tour inside the review is alto getting populated with guides
   // and it is not really needed to have the tours on the reviews for this user case
   // .populate({
   //   path: "tour",

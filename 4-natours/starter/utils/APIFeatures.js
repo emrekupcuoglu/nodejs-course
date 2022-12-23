@@ -1,8 +1,8 @@
 // ?REFACTORING THE CODE INTO A CLASS
 class APIFeatures {
-  constructor(model, queryStr) {
+  constructor(model, query, queryStr) {
     this.model = model;
-    this.query = model.find();
+    this.query = query;
     this.queryStr = queryStr;
   }
 

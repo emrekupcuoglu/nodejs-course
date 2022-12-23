@@ -2,8 +2,8 @@
 const Tour = require("../models/tourModel");
 
 const APIFeatures = require("../utils/APIFeatures");
-const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
+const handlerFactory = require("./handlerFactory");
 
 // We don't need this anymore because we are working with a real database now
 // const toursData = JSON.parse(
@@ -53,172 +53,190 @@ exports.aliasTopTours = (req, res, next) => {
 //   next();
 // };
 
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  // ?Getting rid of the try catch blocks
-  // We got rid of the repetitive try catch and changed them with the catchAsync function
-  // *EXECUTE THE QUERY
-  const features = await new APIFeatures(Tour, req.query)
-    // paginate() method needs to be the last because it is an async function
-    // So we have tho wait that and if it is not the last the other methods can not access the query object
-    // because paginate returns a promise that needs to be resolved
-    .filter()
-    .sortQuery()
-    .limitFields()
-    .paginate();
-  // console.log(features.query);
-  const tours = await features.query;
+// ? Factory Functions
+// We have created a general function that creates functions to be used in multiple places
+// With this we do not need to write duplicate code for every deleteOne operation
+// We can use this for almost every deleteOne operation we need (if it is not too specialized).
+// * This works because of closures
 
-  // *2. We can use special mongoose methods
-  // Chaining of methods work because these methods do NOT return a promise
-  // Instead they return a thenable. Thenables are different then promises.
-  // They return a Query object. But when we await them
-  // the query executes and it returns the document that match the query.
-  // const query = await Tour.find()
-  //   .where("duration")
-  //   .equals(5)
-  //   .where("difficulty")
-  //   .equals("easy");
-  res.status(200).json({
-    status: "success",
-    // results is not a part of the JSEND specification but it is nice to be able to see the number of results on the client side
-    results: tours.length,
-    data: {
-      // name of this property is tours because the name of the API end point is tours
-      tours: tours,
-    },
-  });
+exports.getAllTours = handlerFactory.getAll(Tour);
+
+// exports.getAllTours = catchAsync(async (req, res, next) => {
+//   // ?Getting rid of the try catch blocks
+//   // We got rid of the repetitive try catch and changed them with the catchAsync function
+//   // *EXECUTE THE QUERY
+//   const features = await new APIFeatures(Tour, req.query)
+//     // paginate() method needs to be the last because it is an async function
+//     // So we have tho wait that and if it is not the last the other methods can not access the query object
+//     // because paginate returns a promise that needs to be resolved
+//     .filter()
+//     .sortQuery()
+//     .limitFields()
+//     .paginate();
+//   // console.log(features.query);
+//   const tours = await features.query;
+
+//   // *2. We can use special mongoose methods
+//   // Chaining of methods work because these methods do NOT return a promise
+//   // Instead they return a thenable. Thenables are different then promises.
+//   // They return a Query object. But when we await them
+//   // the query executes and it returns the document that match the query.
+//   // const query = await Tour.find()
+//   //   .where("duration")
+//   //   .equals(5)
+//   //   .where("difficulty")
+//   //   .equals("easy");
+//   res.status(200).json({
+//     status: "success",
+//     // results is not a part of the JSEND specification but it is nice to be able to see the number of results on the client side
+//     results: tours.length,
+//     data: {
+//       // name of this property is tours because the name of the API end point is tours
+//       tours: tours,
+//     },
+//   });
+// });
+
+exports.getTour = handlerFactory.getOne(Tour, {
+  path: "reviews",
+  select: "-__v",
 });
 
-exports.getTour = catchAsync(async (req, res, next) => {
-  // req.params are where all the parameters (variables) we define in the URL are stored
+// exports.getTour = catchAsync(async (req, res, next) => {
+//   // req.params are where all the parameters (variables) we define in the URL are stored
 
-  // findById finds the document with the matching id
-  // It is a shorthand for the findOne method with a filter object:
-  // findOne({_id:req.params.id})
-  // * We use the .populate() method for referencing
-  // populate populates, basically filles, the field called guides in our model
-  // The guides field only contains the reference and with
-  // populate we are going to fill it with actual data but only in the query not in the database.
-  // populate takes the name of the field we want to populate
-  // Instead of passing as string with the name of the filed we can also pass an options object
-  // and specify which field we want to show up
-  // ! Using populate creates a new query behind the scenes
-  // If you do it once or twice in a small application then that small hit on performance is not a problem at all.
-  // But in a huge application with tons of populates all over the places then that might indeed have some effect on performance.
-  // This works only for this route if we wanted it to work for getAllTours can either copy it and use it in that handler as well
-  // Or create a query middleware which is the better choice in this case.
-  // const tour = await Tour.findById(req.params.id).populate({
-  //   path: "guides",
-  //   select: "-__v -passwordChangedAt",
-  // });
-  const tour = await Tour.findById(req.params.id).populate({
-    path: "reviews",
-    select: "-__v",
-  });
+//   // findById finds the document with the matching id
+//   // It is a shorthand for the findOne method with a filter object:
+//   // findOne({_id:req.params.id})
+//   // * We use the .populate() method for referencing
+//   // populate populates, basically filles, the field called guides in our model
+//   // The guides field only contains the reference and with
+//   // populate we are going to fill it with actual data but only in the query not in the database.
+//   // populate takes the name of the field we want to populate
+//   // Instead of passing as string with the name of the filed we can also pass an options object
+//   // and specify which field we want to show up
+//   // ! Using populate creates a new query behind the scenes
+//   // If you do it once or twice in a small application then that small hit on performance is not a problem at all.
+//   // But in a huge application with tons of populates all over the places then that might indeed have some effect on performance.
+//   // This works only for this route if we wanted it to work for getAllTours can either copy it and use it in that handler as well
+//   // Or create a query middleware which is the better choice in this case.
+//   // const tour = await Tour.findById(req.params.id).populate({
+//   //   path: "guides",
+//   //   select: "-__v -passwordChangedAt",
+//   // });
+//   const tour = await Tour.findById(req.params.id).populate({
+//     path: "reviews",
+//     select: "-__v",
+//   });
 
-  // Checking if tour exist
-  if (tour === null) {
-    // If the queried tour doesn't exist mongo return success with tour equal to null
-    // We should send an error to the client if there is no tour with that id
-    // We need to return because other wise code below the next() function
-    // will execute and we will send 2 responses to the client one error message
-    // and one success message.
-    return next(new AppError("There is no tour with that ID", 404));
-  }
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour,
-    },
-  });
-});
+//   // Checking if tour exist
+//   if (tour === null) {
+//     // If the queried tour doesn't exist mongo return success with tour equal to null
+//     // We should send an error to the client if there is no tour with that id
+//     // We need to return because other wise code below the next() function
+//     // will execute and we will send 2 responses to the client one error message
+//     // and one success message.
+//     return next(new AppError("There is no tour with that ID", 404));
+//   }
+//   res.status(200).json({
+//     status: "success",
+//     data: {
+//       tour,
+//     },
+//   });
+// });
 
-exports.createTour = catchAsync(async (req, res, next) => {
-  // !the body.req is an object because of the body parser middleware
-  // We are using the express.json() middleware
-  // And this middleware parses the request
-  // and turns the req.body from a string into an object
+exports.createTour = handlerFactory.createOne(Tour);
 
-  // Instead of doing this to create a document
-  // const newTour = new Tour({req.body});
-  // await newTour.save();
+// exports.createTour = catchAsync(async (req, res, next) => {
+//   // !the body.req is an object because of the body parser middleware
+//   // We are using the express.json() middleware
+//   // And this middleware parses the request
+//   // and turns the req.body from a string into an object
 
-  // We can do it in a easier way
-  // This is basically the same thing
-  // Main difference is that with this version
-  // We have called the method directly on the Tour
-  // While on the first version we called the method on the new document
-  // Like the save() method create() method returns a promise as well
-  const newTour = await Tour.create(req.body);
+//   // Instead of doing this to create a document
+//   // const newTour = new Tour({req.body});
+//   // await newTour.save();
 
-  res.status(201).json({
-    status: "success",
-    data: {
-      tour: newTour,
-    },
-  });
-});
+//   // We can do it in a easier way
+//   // This is basically the same thing
+//   // Main difference is that with this version
+//   // We have called the method directly on the Tour
+//   // While on the first version we called the method on the new document
+//   // Like the save() method create() method returns a promise as well
+//   const newTour = await Tour.create(req.body);
 
-exports.updateTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    // With this option the new updated document will be returned
-    new: true,
-    // With this each time we update data
-    // validators we have set on our schema will be run again.
-    // If we didn't set this to true
-    // we could changed the price to be a string.
-    // !If we want to validate data on update we need to set the runValidators to true
-    // But because the validators from our schema runs with the update
-    // it checks the data against the schema and because
-    // we allow price to be only a number if we try to enter a string it throws an error.
-    // !We moved the runValidators to the tourModel using a pre findOneAndUpdate hook
-    // !this way it works for every method that uses find findOneAndUpdate not just updateTour
-    // !Look there for more information
-    // runValidators: true,
-    context: "query",
-  });
+//   res.status(201).json({
+//     status: "success",
+//     data: {
+//       tour: newTour,
+//     },
+//   });
+// });
 
-  // Checking if tour exist
-  if (tour === null) {
-    // If the queried tour doesn't exist mongo return success with tour equal to null
-    // We should send an error to the client if there is no tour with that id
-    // We need to return because other wise code below the next() function
-    // will execute and we will send 2 responses to the client one error message
-    // and one success message.
-    return next(new AppError("There is no tour with that ID", 404));
-  }
+exports.updateTour = handlerFactory.updateOne(Tour);
+// exports.updateTour = catchAsync(async (req, res, next) => {
+//   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//     // With this option the new updated document will be returned
+//     new: true,
+//     // With this each time we update data
+//     // validators we have set on our schema will be run again.
+//     // If we didn't set this to true
+//     // we could changed the price to be a string.
+//     // !If we want to validate data on update we need to set the runValidators to true
+//     // But because the validators from our schema runs with the update
+//     // it checks the data against the schema and because
+//     // we allow price to be only a number if we try to enter a string it throws an error.
+//     // !We moved the runValidators to the tourModel using a pre findOneAndUpdate hook
+//     // !this way it works for every method that uses find findOneAndUpdate not just updateTour
+//     // !Look there for more information
+//     // runValidators: true,
+//     context: "query",
+//   });
 
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour,
-    },
-  });
-});
+//   // Checking if tour exist
+//   if (tour === null) {
+//     // If the queried tour doesn't exist mongo return success with tour equal to null
+//     // We should send an error to the client if there is no tour with that id
+//     // We need to return because other wise code below the next() function
+//     // will execute and we will send 2 responses to the client one error message
+//     // and one success message.
+//     return next(new AppError("There is no tour with that ID", 404));
+//   }
 
-exports.deleteTour = catchAsync(async (req, res, next) => {
-  // 204 is code for no content
-  // We usually do not send any data back
-  // we usually only send null
-  const tour = await Tour.findByIdAndDelete(req.params.id);
+//   res.status(200).json({
+//     status: "success",
+//     data: {
+//       tour,
+//     },
+//   });
+// });
 
-  // Checking if tour exist
-  if (tour === null) {
-    // If the queried tour doesn't exist mongo return success with tour equal to null
-    // We should send an error to the client if there is no tour with that id
-    // We need to return because other wise code below the next() function
-    // will execute and we will send 2 responses to the client one error message
-    // and one success message.
-    return next(new AppError("There is no tour with that ID", 404));
-  }
+exports.deleteTour = handlerFactory.deleteOne(Tour);
 
-  res.status(204).json({
-    status: "Success",
-    data: {
-      tour: null,
-    },
-  });
-});
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//   // 204 is code for no content
+//   // We usually do not send any data back
+//   // we usually only send null
+//   const tour = await Tour.findByIdAndDelete(req.params.id);
+
+//   // Checking if tour exist
+//   if (tour === null) {
+//     // If the queried tour doesn't exist mongo return success with tour equal to null
+//     // We should send an error to the client if there is no tour with that id
+//     // We need to return because other wise code below the next() function
+//     // will execute and we will send 2 responses to the client one error message
+//     // and one success message.
+//     return next(new AppError("There is no tour with that ID", 404));
+//   }
+
+//   res.status(204).json({
+//     status: "Success",
+//     data: {
+//       tour: null,
+//     },
+//   });
+// });
 
 // ?AGGREGATION PIPELINE
 // !Aggregation pipeline doesn't cast types and doesn't respect the schema
