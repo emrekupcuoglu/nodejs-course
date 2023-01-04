@@ -1,0 +1,61 @@
+//- Pug is a simple white space sensitive syntax for writing html
+//- All we use to write html elements are their name and indentation
+//- We can also use regular html in pug as well
+
+//- We can use two different kinds of comments in the pug files
+// First one is just this and this will be visible in the HTML just like normal HTML comments
+//- This kind of comments is only for the pug file and it is not outputted to the HTML
+
+//- In pug to represent an element that is inside of another element we use indentation
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    //- For attributes in pug we use a parenthesis and write the attributes in the parenthesis
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    //- We can use interpolation to write code they are similar to the ES6 template strings.
+    //- title Natours &mdash; #{tour}
+    //- * Even though we are calling the overview tour or other template that extends the base template,
+    //- * base template still has access to the locals.
+    title Natours | #{ title }
+    //- The root folder is the public folder as far as the browser is concerned.
+    //- This is happens because of the express.static() middleware
+    link(rel="stylesheet", href="/css/style.css")
+    //- The href is just "img/favicon.png" and not "../public/img/favicon.png" because to serve static files they must be in the public folder
+    //- and as i understand  only the files in the public folder are accessible to the browser. 
+    //- So the root folder is the public folder as far as the browser is concerned.
+    //- This is happens because of the express.static() middleware
+    link(rel="icon", href="/img/favicon.png", type="image/png")
+    link(
+      rel="stylesheet",
+      href="https://fonts.googleapis.com/css?family=Lato:300,300i,700"
+    )
+
+  body
+    //- We can use variables in the pug, they are called locals in the pug.
+    //- To use the mwe use first need to pass them in. We pass them in with res.render() method
+    //- And to use them we user the equal (=) sign
+    //- There can not be a space between the h1 and the equal (=) sign
+    //- The code we have write here is called buffered code.
+    //- Buffered code is code that is going to add something to the output.
+    //- h1= tour
+    //- We can also write JavaScript here as well.
+    //- h2=user.toUpperCase()
+
+    //- We also have un-buffered code which is code that is not going to add anything to the output.
+    //- We write that by writing a dash (-).
+    //- - const x=9
+    //- h2=x
+
+    //- p This is just some text
+
+    // HEADER
+    include _header
+
+    // CONTENT
+    block content
+      h1 This is a placeholder heading
+    // FOOTER
+
+    include _footer

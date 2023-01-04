@@ -1,0 +1,50 @@
+INDEXES
+When we are doing a query we can use the explain method on the query to see the statistics of that query
+There are a lot of statistics this method provides
+but here we are interested in execution statistics.
+In there we can see the number of documents that were returned
+But more importantly we can see the number of documents examined which in our case is 9.
+This means the mongoDB had to examine, scan, all of the 9 documents in order to find the three that matched the query.
+This is not efficient at all. At this scale it doesn't matter but if we had hundreds of thousand of documents then this would significantly effect the
+read performance of this query. So it doesn't matter for this application but it might matter someday in another application.
+We can solve this using indexes.
+We can create indexes on specific fields in a collection. For example mongoDB automatically creates an index on the _id by default.
+We can see that on the indexes tab on mongoCompass app
+The _id index is basically an ordered list of all the IDs that get stored somewhere of outside of the collection.
+This index is extremely useful.
+Whenever documents are queried by the _id mongoDB will search that ordered index instead of searching through the whole collection
+and look all the documents one by one which is of course is much slower.
+So without an index mongoDB has to look at each document one by one, but with an index on the field we are querying for
+this process becomes much more efficient.
+We can also set our own indexes on fields that we query very often.
+So let's do that with the price field because that is one of the most important fields the people will query for.
+We do this in the tour model
+We have created a single field index for the price field
+If we have a field that is being queried with another field it is more efficient to use a compound index.
+So if we query for price[lt]=1000&ratingsAverage[gte]=4.7 we get 2 documents but we examine 3 documents
+We can create a compound index and only examine 2 documents
+This only for learning purposes it doesn't matter at this scale and it is probably much worse to create indexes at this scale
+The compound index also works when we query for one of the fields individually (This doesn't work properly for me right now)
+
+One important thing to keep in mind is that the indexes take up considerable amount of space
+Right now tours document takes only 8.2 KB but the 2 index we have take up 73.9KB 36.9KB each.
+So don't use indexes carelessly thinking it will solve everything.
+
+To set indexes on fields we need to carefully study the access patterns of our application in order to figure out
+which fields are queried the most and then set indexes for these fields.
+We are setting indexes for the price and ratingsAverage because they are more likely to be queried often
+but not on the group size because not many people will query that field.
+We really don't want to over do it with the indexes. So we don't want to set indexes blindly on all fields and hope for the best.
+Because each index actually uses resources as you can see from this example,
+and also each index needs to be updated that the underlying collection is updated.
+So if we have a collection with a high write/read ratio then it would make no sense to create an idex on any field
+in this collection, because the cost of always updating the index and keeping it in memory clearly outweighs the benefit
+of having the index in the first place if we rarely have searches for that collection.
+
+In summary when deciding whether to index a certain field or not we must balance
+the frequency of queries using that exact field with the cost of maintaining this index
+and also with the read/write pattern of the resource.
+Just like with data modeling there are no hard rules here.
+It is all fuzzy and you need to experiment to get it right.
+But whatever you do, do NOT ignore indexing because even if it not perfect
+it will always have a huge benefit to your application.

@@ -1,3 +1,4 @@
+const path = require("node:path");
 const express = require("express");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
@@ -7,15 +8,28 @@ const xss = require("xss-clean");
 const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 
-// Express module return a function and we run that function
-// and save its results to a variable called app
-const app = express();
-
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
+const viewRouter = require("./routes/viewRoutes");
+
+// Express module return a function and we run that function
+// and save its results to a variable called app
+const app = express();
+
+// We have installed the pug module but we don't have to require pug because express handles that behind the scenes
+app.set("view engine", "pug");
+// We need to define where these views are located in our filesystem
+// Pug templates are called views in Express.js because these templates are
+// in fact the views in a model view controller architecture.
+// path is a core node.js module that is used for manipulating path names
+// It might seem a bit overkill to use the path.join() but we don't always know
+// whether a path we have received from somewhere already has a slash or not.
+// You will see this function all the time to prevent this kind of bug.
+// Because with path.join () we don't even need to think about slashes
+app.set("views", path.join(__dirname, "views"));
 
 // 1. MIDDLEWARES
 // middleware
@@ -25,6 +39,17 @@ const reviewRouter = require("./routes/reviewRoutes");
 // The step the request goes through in this example is really simple
 // The data from the body is added to the request object.
 // We need to use app.use to use middleware
+
+// ? Serving static files
+// We use this middleware for serving static files
+// like images, html, etc.
+// When it can not found a route specified in any of our routes
+// it will look into the public folder
+// And with this we don''t have to specify the public folder in the url as well
+// We can just write http://127.0.0.1:3000/overview.html
+// instead of http://127.0.0.1:3000/public/overview.html
+app.use(express.static(path.join(__dirname, "public")));
+
 // ? Set Security HTTP Headers
 app.use(helmet());
 
@@ -59,16 +84,6 @@ app.use(
     ],
   })
 );
-
-// ? Serving static files
-// We use this middleware for serving static files
-// like images, html, etc.
-// When it can not found a route specified in any of our routes
-// it will look into the public folder
-// And with this we don''t have to specify the public folder in the url as well
-// We can just write http://127.0.0.1:3000/overview.html
-// instead of http://127.0.0.1:3000/public/overview.html
-app.use(express.static(`${__dirname}/public`));
 
 // *3rd party middleware
 // We are using the environment variable to only use this logging middleware
@@ -300,12 +315,12 @@ app.use((req, res, next) => {
 
 // !To use tourRouter we have to add it to our middleware stack
 // Because tourRouter is a real middleware
-
 // First we specify the route which we want to use this router(middleware)
 // Then the function, which is the router in this case, we want to be executed
 // We have basically created a sub application
 // This process is called mounting the router
 // We are mounting the router on a new route
+app.use("/", viewRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
@@ -319,7 +334,7 @@ app.use("/api/v1/reviews", reviewRouter);
 // But we don't want that we to handle all the routes
 // and methods in one handler.
 // We can use app.get to handle all http methods
-// and we wan pass in a star to handle all of the routes
+// and we want pass in a star to handle all of the routes
 
 // This works because of the request response cycle
 // If any matching route is found than the request response cycle is finished
@@ -352,7 +367,7 @@ app.all("*", (req, res, next) => {
 });
 
 // ?Implementing Global Error Handling
-// *You can read more about error handling with express it in the what-is-express.txt file
+// *You can read more about error handling with express in the what-is-express.txt file
 // To define an error handling middleware all we have to do is to
 // give the middleware function four arguments and express will automatically recognize
 // it as error handling middleware and therefore only call it when there is an error.

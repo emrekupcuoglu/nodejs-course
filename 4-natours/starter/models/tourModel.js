@@ -108,7 +108,10 @@ const tourSchema = new mongoose.Schema(
       // On numbers we have the min and max validators
       // A rating must be between 1 and 5
       min: [1, "Rating must be higher than 1.0"],
-      max: [5, "Rating must be lower than 5.0"],
+      // We are going to use a setter function to round the ratingsAverage
+      // The setter function will be run each time a new value is set for this field
+      // the callback function receives the current value and in our case rounds the value and returns it
+      set: (val) => Number(val.toFixed(1)),
     },
     ratingsQuantity: {
       type: Number,
@@ -264,11 +267,11 @@ const tourSchema = new mongoose.Schema(
       address: String,
       description: String,
     },
+
     // ? Embedding a new document
-    // We use an array when we want to create a new document inside a document
+    // We use an array when we want to create more then one document inside a document
     // locations is similar to the startLocation but it is an array
 
-    //
     locations: [
       {
         type: {
@@ -304,6 +307,21 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+// ? INDEXES
+// 1 stands for ascending order -1 stands for descending order
+// there are other types of indexes as well.
+// This index is called a single field index
+// tourSchema.index({ price: 1 });
+
+// If we query for a field combined with another one then it is more efficient to create a compound index.
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
+// * Geo-Spatial Index
+// For geo-spatial data the index needs to be a 2D sphere index if the data describes real points on a sphere like earth
+// or instead we can use 2D index if we are using fictional points on a simple 2D plane
+tourSchema.index({ startLocation: "2dsphere" });
 
 // !If we try to put data that is not in the schema like difficulty in for example
 // !It will not be inside the document because we didn't specify it in the schema
@@ -355,7 +373,7 @@ tourSchema.virtual("durationWeeks").get(function () {
 tourSchema.virtual("reviews", {
   // reference to the Model we want to reference.
   ref: "Review",
-  // We meed to specify the names of the fields in order to connect the two datasets.
+  // We need to specify the names of the fields in order to connect the two datasets.
   // For this we need to specify 2 fields, the foreignField and the localField
   // foreignField is the name of the field in the other model, review model in this case
   // where the reference to the current model is stored which is the tour field in this case.
@@ -454,7 +472,7 @@ tourSchema.pre(/^find/, function (next) {
 tourSchema.pre(/^find/, function (next) {
   this.populate({
     path: "guides",
-    select: "-__v -passwordChangedAt",
+    select: "-__v -passwordChangedAt +role",
   });
   next();
 });
@@ -504,6 +522,7 @@ tourSchema.post("find", function (docs, next) {
 });
 
 // ?AGGREGATE MIDDLEWARE
+
 // Aggregate middleware allows us to run functions before or after an aggregation happens.
 // Right now secret tours are still being used in aggregation.
 // When we use the getTourStats() method we get 10 tours instead of 9
@@ -512,12 +531,22 @@ tourSchema.post("find", function (docs, next) {
 tourSchema.pre("aggregate", function (next) {
   // pipeline method returns <ARRAY> the current pipeline.
   // The current pipeline is similar to the operation that will be executed.
-  console.log(this.pipeline());
+  // console.log(this.pipeline());
   // We need to add another match statement to the beginning of the pipeline
   // When we want to add something to the beginning of an array we use the unshift method
   // With this mongoose adds the aggregation operation we want
   // to the beginning of the aggregation pipeline before sending it to the mongoDB server.
-  this.pipeline().unshift({ $match: { secretTour: { $exists: false } } });
+  // ! We add this to the beginning using unshift and not to the end using push because:
+  // * We only have access to the fields we have specified in the group stage
+  // * So if we add it using push then we try to match secret tours it won't work
+  // *because secretTour field won't exist.
+  const pipeline = this.pipeline();
+  console.log(pipeline[0]);
+  if (Object.keys(pipeline[0])[0] === "$geoNear") {
+    pipeline.splice(1, 0, { $match: { secretTour: { $exists: false } } });
+  } else {
+    this.pipeline().unshift({ $match: { secretTour: { $exists: false } } });
+  }
   next();
 });
 

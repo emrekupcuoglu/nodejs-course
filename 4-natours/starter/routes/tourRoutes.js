@@ -99,6 +99,15 @@ router
     tourController.getMonthlyPlan
   );
 
+// We can use a query string for this like
+// router.route("/tours-withing?distance=231&center=45&latlng=-40,45&unit=km");
+// But we choose to go with the parameter router because it looks cleaner
+router
+  .route("/tours-within/:distance/center/:latlng/unit/:unit")
+  .get(tourController.getToursWithin);
+
+router.route("/distances/:latlng/unit/:unit").get(tourController.getDistances);
+
 router
   // Instead of:
   // .route("/api/v1/tours")

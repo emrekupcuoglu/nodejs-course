@@ -61,18 +61,14 @@ router.patch("/resetPassword/:token", authController.resetPassword);
 router.use(authController.protect);
 
 router.patch("/updatePassword", authController.updatePassword);
-router.get(
-  "/me",
-  authController.protect,
-  userController.getMe,
-  userController.getUser
-);
+router.get("/me", userController.getMe, userController.getUser);
 router.patch("/updateMe", userController.updateMe);
 router.delete("/deleteMe", userController.deleteMe);
 
 // Because all the routes below this require admin access
 // we used a middleware instead of adding it manually to all routes
 router.use(authController.restrictTo("admin"));
+
 router
   .route("/")
   .get(userController.getAllUsers)

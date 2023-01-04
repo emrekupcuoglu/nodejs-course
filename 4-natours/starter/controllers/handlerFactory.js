@@ -161,6 +161,12 @@ exports.getAll = (Model) =>
       .limitFields()
       .paginate();
     // console.log(features.query);
+
+    // ? INDEXES
+    // Indexes are explained in the indexes.txt file
+    // The explain method gives statistics about the query
+    // const docs = await features.query.explain();
+
     const docs = await features.query;
 
     // *2. We can use special mongoose methods

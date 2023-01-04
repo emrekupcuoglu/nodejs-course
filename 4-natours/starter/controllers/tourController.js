@@ -2,6 +2,7 @@
 const Tour = require("../models/tourModel");
 
 const APIFeatures = require("../utils/APIFeatures");
+const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const handlerFactory = require("./handlerFactory");
 
@@ -349,7 +350,7 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
         // We also want to know which tours are starting
         // We use an array for that because we have more than one entry for the field
         // We use the $push operator for creating an array
-        //We push in the name field as each document goes through this stage
+        // We push in the name field as each document goes through this stage
         tours: { $push: "$name" },
         durations: { $push: "$duration" },
       },
@@ -379,7 +380,7 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
         numTourStarts: -1,
       },
     },
-    // We can use the imit field to limit the amount of documents being showed
+    // We can use the limit field to limit the amount of documents being showed
     // Just like the limit method of the query object
     {
       // This is just for learning purposes so we set it to twelve so that no documents get cut off
@@ -391,6 +392,109 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     status: "Success",
     data: {
       plan,
+    },
+  });
+});
+
+// ? Geo-spatial Queries
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+
+  // radius is the we want to have as the radius but converted to radians
+  // In order to get the radians we need to divide our distance by the radius of the earth.
+  const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
+
+  if ((!lat, !lng)) {
+    next(
+      new AppError(
+        "Please provide latitude and longitude in the format lat,lng.",
+        400
+      )
+    );
+  }
+  console.log("1");
+  // We query for the startLocation because start location is what hold the geo-spatial point where each tour starts.
+  // We will use a geo-spatial operator called geoWithin
+  // This operator finds documents within a certain geometry and we need to define that geometry in the next step
+  // We want to find documents inside of a sphere that starts at the point we have defined using the lat and lng
+  // and has the radius as the distance we have defined.
+  // We do that by passing a centerSphere to the geoWithin.
+  // centerSphere operator takes in an array of coordinates and of the radius
+  // and coordinates needs to be in another array
+  // And counter-intuitively we need to define the longitude first then the latitude
+  // For this radius instead of passing the distance the mongoDB expects the radius in radians.
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  // ! In order to do geo-spatial queries we need to attribute an index to the field where the geo-spatial data we are searching for is stored
+  // We need to add an index to startLocation in this case.
+  // You can see the geo-spatial data in detail in the compass app
+  // It provides a really nice graphical interface with a map
+  // You can also replicate the query in there and see if it is working correctly using the provided map
+  // ! In order to see the geo-spatial queries on the map in compass all your documents needs to have a startLocation
+
+  res.status(200).json({
+    status: "success",
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+  console.log(unit);
+  if ((!lat, !lng)) {
+    next(
+      new AppError(
+        "Please provide latitude and longitude in the format lat,lng.",
+        400
+      )
+    );
+  }
+
+  // ? Geo-spatial Aggregation
+  // For geo-spatial aggregation there is only one stage and that is called geoNear
+  // geoNear always needs to be the first stage in the pipeline
+  const multiplier = unit === "mi" ? 0.000621371 : 0.001;
+  const distances = await Tour.aggregate([
+    {
+      // geoNear requires that at least one of our fields contains a geo-spatial index
+      // If there is only one filed with a geo-spatial index, then the geoNear stage will automatically use that index.
+      // If you have multiple fields with geo-spatial indexes then you need to specify
+      // the field you want to be used for calculations using the keys parameter.
+      $geoNear: {
+        // near is the point from which to calculate the distances.
+        // So all the distances will be calculated between this point and the startLocations
+        // We need to specify this point as GeoJSON
+        near: {
+          type: "Point",
+          coordinates: [Number(lng), Number(lat)],
+        },
+        // This is the field that will be created and where all the calculated distances will be stored
+        distanceField: "distance",
+        // The default distance is in meters
+        // With the distanceMultiplier field we can convert it to kilometers or any other unit
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: "success",
+    results: distances.length,
+    data: {
+      data: distances,
     },
   });
 });

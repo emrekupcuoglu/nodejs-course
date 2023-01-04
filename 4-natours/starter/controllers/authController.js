@@ -31,6 +31,7 @@ const createSendToken = (user, statusCode, res) => {
     httpOnly: true,
   };
   if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+
   // ? Sending a cookie
   // To send a cookie we attach it to the response object using the .cookie() method
   // First argument is the name of the cookie
@@ -222,7 +223,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // ! it can not find it because we have deleted the passwordConfirm so that it doesn't waster any space in the database
   // ! and because passwordConfirm is required it fails.
   // ! This is why it only fails on passwordConfirm even though the password field is also required.
-  // ! In a large codebase this bug might be hard to find to solve this we can be more explicit and use a virtual field for the passwordConfirm.
+  // ! In a large codebase this bug might be hard to find to solve this we can be more explicit and use a virtual field for the passwordConfirm. (this might now work)
   await user.save({ validateModifiedOnly: true });
 
   // 4. Send it as email

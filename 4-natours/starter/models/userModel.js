@@ -134,6 +134,7 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
+// ? Instance Methods
 // *Instance method is a method that is going to be available on all documents of a certain collection.
 // It is the opposite of static methods. So it is just a normal class method
 //The this keyword points to the document in instance methods
@@ -145,7 +146,7 @@ userSchema.methods.correctPassword = async function (candidatePassword) {
   // so we can get the userPassword from the this keyword.
   // .compare() method takes the plain password as the first argument
   // and the hashed password as the second argument and compares them.
-  // To compare it hashes the plain password again and compares the output with the hashed password.
+  // To compare, it hashes the plain password again and compares the output with the hashed password.
   // Even though the hash is salted it can still do this because the salt is part of the hash.
   // First part of the hash is the algorithm that is used, it looks like this: $2b$.
   // Second part is the cost factor of the salt string.

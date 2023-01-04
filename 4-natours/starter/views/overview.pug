@@ -1,0 +1,76 @@
+//- ? Extending the Base Template with Blocks
+//- In each template in this case the overview we only want to put the content in here
+//- We don't want to put the header or the footer or any of the stuff
+//- we have in the base.pug in  here again. So we will only put the content into this file
+//- and then we will inject this content into the base template, which we can call the parent template.
+//- This process is called extending. Whenever the overview template is rendered
+//- we take the base template and fill it up with the content of this file, so we extend it.
+//- To implement this first we need to put a block in the base
+//- Then we extend the base template
+//- Whatever we put in the block in the base.pug will be extended.
+extends base
+
+//- * Each file can only extend one file but we can have multiple blocks in each file.
+//- So we can have a block for header as well and extend that in another file.
+//- We also create a block called content here
+//- And we put our content here
+//- Here we have re-defined the content block that we have declared in the base.pug.
+block content
+  main.main
+    .card-container
+      //- This is only one card but we need cards for each tour
+      //- With pug we can loop over the tour local that we have passes into the overview.pug template
+      //- This will crete a tour for each item in tour using the data from that tour
+      each tour in tours
+        .card
+          .card__header
+            .card__picture
+              .card__picture-overlay &nbsp;
+              img.card__picture-img(
+                src=`img/tours/${tour.imageCover}`,
+                alt=`${tour.name}`
+              )
+            h3.heading-tertiary
+              span= tour.name
+          .card__details
+            h4.card__sub-heading= `${tour.difficulty} ${tour.duration}-day tour`
+            p.card__text= tour.summary
+            .card__data
+              svg.card__icon
+                use(xlink:href="img/icons.svg#icon-map-pin")
+              span= tour.startLocation.description
+            .card__data
+              svg.card__icon
+                use(xlink:href="img/icons.svg#icon-calendar")
+              span= tour.startDates[0].toLocaleString("en-EN", { month: "long", year: "numeric" })
+            .card__data
+              svg.card__icon
+                use(xlink:href="img/icons.svg#icon-flag")
+              span= `${tour.locations.length} stops`
+            .card__data
+              svg.card__icon
+                use(xlink:href="img/icons.svg#icon-user")
+              span= `${tour.maxGroupSize} people`
+          .card__footer
+            p
+              span.card__footer-value= `$${tour.price}`
+              //- ? Empty piped lane |
+              //- Whenever we need a real space between two inline elements which are these spans
+              //- Then we need to manually create that space using the so-called empty piped line
+              //- The empty pipeline creates a space for use where we can create content  outside of an element
+              //- So we add a space after the empty piped lane
+              //- We can't just a add an empty space because prettier deletes it
+              //- To add an empty space:
+              //- 1. we can disable prettier for this line only
+              //- 2. we can use a &nbsp;
+              //- 3. we can use interpolation #{" "}
+              | &nbsp;
+              span.card__footer-text per person
+            p.card__ratings
+              span.card__footer-value= tour.ratingsAverage
+              | #{ " " }
+              span.card__footer-text= `rating (${tour.ratingsQuantity})`
+              //- starting a URL with a slash (/) is called a relative URL
+              //- This will add this piece of URL after the host name
+              //- So this is equal to 127.0.0.1/tour/${tour.slug}
+            a.btn.btn--green.btn--small(href=`/tour/${tour.slug}`) Details
