@@ -1,6 +1,20 @@
 extends base
 include _reviewCard
 
+//- We extend the base pug and we add the content of the head block to the base template
+//- Normally when we extend a template the content of that template is replaced by the content of the extending template
+//- But we don't want to replace the head of the base.pug, we want to add to that
+//- We do that with the append command
+//- With append the content in this block will be appended to that block
+//- if we use prepend it will be prepended
+block append head
+  script(src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js")
+  link(
+    href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css",
+    rel="stylesheet"
+  )
+  //- script(src="/js/mapBox.js", defer) 
+
 //- ? MIXINS
 //- Mixins are like re-usable pieces of code that we can pass arguments into
 //- They are a bit like functions
@@ -68,12 +82,11 @@ block content
 
   section.section-pictures
     //- We can define a second variable in a pug loop and that second variable is the index
-
     each img, i in tour.images
       .picture-box
         //- * We have a class name that depends on the image and we can not simply use
-        //- * the index to change the name of tha class based on the image that is being used
-        //- * We are going to use a class attribute to fix this
+        //- * the index to change the name of tha class based on the image that is being used.
+        //- * We are going to use the class attribute to fix this
         img.picture-box__img(
           src=`/img/tours/${img}`,
           alt=`The Park Camper Tour ${i+1}`,
@@ -81,7 +94,11 @@ block content
         )
 
   section.section-map
-    #map
+    //- We expose the locations tho the JavaScript using the data attribute
+    //- This way JS doesn't need to do an fetch request to get the location data 
+    //- We need to stringify the locations array because there is not such thing as an array in the HTML
+    //- There are only strings
+    #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
   section.section-reviews
     .reviews

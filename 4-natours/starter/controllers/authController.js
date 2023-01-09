@@ -35,7 +35,7 @@ const createSendToken = (user, statusCode, res) => {
   // ? Sending a cookie
   // To send a cookie we attach it to the response object using the .cookie() method
   // First argument is the name of the cookie
-  //Second is the data we actually want to send in the cookie
+  // Second is the data we actually want to send in the cookie
   // Third argument is the options object
   res.cookie("jwt", token, cookieOptions);
   // Remove password from the output
@@ -56,7 +56,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   // const newUser = await User.create(req.body);
 
   // To fix it we only get the data we need from the req.body
-  await User.create({
+  const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
@@ -70,7 +70,9 @@ exports.signup = catchAsync(async (req, res, next) => {
   // But this only works for searching the database not when creating a new user.
   // So we first create a new user then search for that user in the database and send that info
   // and with the select:false in the schema we don't send the password.
-  const newUser = await User.findOne({ email: req.body.email });
+  // * We don't need this anymore because I learned more things after I implemented this
+  // const newUser = await User.findOne({ email: req.body.email });
+  newUser.password = undefined;
 
   // The first argument is the payload, this an object for all the data we want to store
   // Second argument is the secret, configuration file is a perfect place to the secret
@@ -85,6 +87,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+  console.log(req.body);
 
   // 1. Check if email and password exist
   if (!email || !password) {
@@ -177,6 +180,30 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
+// This middleware is similar to protect but the goal is not to protect
+// instead it is to check if the user is logged in or not.
+exports.isLoggedIn = async (req, res, next) => {
+  if (req.cookies.jwt) {
+    // 1. Verify token
+    const jwtVerifyPromise = promisify(jwt.verify);
+    const decoded = await jwtVerifyPromise(
+      req.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+
+    // 2. Check if user still exist
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) return next();
+
+    // 3. Check if the user has changed their password after the jwt was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) return next();
+
+    // If the user exist and logged in we can make the user accessible in out templates
+    // to do that we use res.locals and our pug templates will then have access to them
+    res.locals.user = currentUser;
+  }
+  next();
+};
 // Normally we can not pass in arguments to middleware functions
 // To do that we are going to create a wrapper function
 // and that function will return a function that we will use as middleware .

@@ -10,27 +10,30 @@
 doctype html
 html(lang="en")
   head
-    meta(charset="UTF-8")
-    meta(http-equiv="X-UA-Compatible", content="IE=edge")
-    //- For attributes in pug we use a parenthesis and write the attributes in the parenthesis
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    //- We can use interpolation to write code they are similar to the ES6 template strings.
-    //- title Natours &mdash; #{tour}
-    //- * Even though we are calling the overview tour or other template that extends the base template,
-    //- * base template still has access to the locals.
-    title Natours | #{ title }
-    //- The root folder is the public folder as far as the browser is concerned.
-    //- This is happens because of the express.static() middleware
-    link(rel="stylesheet", href="/css/style.css")
-    //- The href is just "img/favicon.png" and not "../public/img/favicon.png" because to serve static files they must be in the public folder
-    //- and as i understand  only the files in the public folder are accessible to the browser. 
-    //- So the root folder is the public folder as far as the browser is concerned.
-    //- This is happens because of the express.static() middleware
-    link(rel="icon", href="/img/favicon.png", type="image/png")
-    link(
-      rel="stylesheet",
-      href="https://fonts.googleapis.com/css?family=Lato:300,300i,700"
-    )
+    //- We want to add the map box to only the tour pages. To do that we can extend the base in the tour template
+    block head
+      meta(charset="UTF-8")
+      meta(http-equiv="X-UA-Compatible", content="IE=edge")
+      //- For attributes in pug we use a parenthesis and write the attributes in the parenthesis
+      meta(name="viewport", content="width=device-width, initial-scale=1.0")
+      //- We can use interpolation to write code they are similar to the ES6 template strings.
+      //- title Natours &mdash; #{tour}
+      //- * Even though we are calling the overview tour or other template that extends the base template,
+      //- * base template still has access to the locals.
+      title Natours | #{ title }
+      //- The root folder is the public folder as far as the browser is concerned.
+      //- This is happens because of the express.static() middleware
+      link(rel="stylesheet", href="/css/style.css")
+      //- The href is just "img/favicon.png" and not "../public/img/favicon.png" because to serve static files they must be in the public folder
+      //- and as i understand  only the files in the public folder are accessible to the browser. 
+      //- So the root folder is the public folder as far as the browser is concerned.
+      //- This is happens because of the express.static() middleware
+      link(rel="icon", href="/img/favicon.png", type="image/png")
+      link(
+        rel="stylesheet",
+        href="https://fonts.googleapis.com/css?family=Lato:300,300i,700"
+      )
+      script(src="/dist/index.js")
 
   body
     //- We can use variables in the pug, they are called locals in the pug.
@@ -55,6 +58,7 @@ html(lang="en")
 
     // CONTENT
     block content
+      //- the content here is replaced by the real content when we extend the base template 
       h1 This is a placeholder heading
     // FOOTER
 
