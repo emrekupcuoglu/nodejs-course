@@ -51,7 +51,17 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ? Set Security HTTP Headers
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        "script-src": ["'self'", "https://unpkg.com"],
+        "connect-src": ["'self'", "https://api.maptiler.com", "ws:"],
+        "worker-src": ["'self'", "blob:"],
+      },
+    },
+  })
+);
 
 // ? Body parser, reading data from body into req.body
 // We can use the limit option to limit the amount of data that comes in the body

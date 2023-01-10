@@ -8,12 +8,16 @@ include _reviewCard
 //- With append the content in this block will be appended to that block
 //- if we use prepend it will be prepended
 block append head
-  script(src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js")
+  //- Because of the COEP we need to specify this resource as crossorigin
+  script(
+    src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js",
+    crossorigin
+  )
   link(
     href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css",
-    rel="stylesheet"
+    rel="stylesheet",
+    crossorigin
   )
-  //- script(src="/js/mapBox.js", defer) 
 
 //- ? MIXINS
 //- Mixins are like re-usable pieces of code that we can pass arguments into
