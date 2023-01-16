@@ -5,12 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
+      "type": "chrome",
       "request": "launch",
-      "name": "Node: Nodemon",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["start"],
-      "outputCapture": "std"
+      "name": "Launch Chrome against localhost",
+      "url": "http://localhost:8000",
+      "webRoot": "${workspaceFolder}",
+      "breakOnLoad": true,
+      "sourceMapPathOverrides": {
+        "/__parcel_source_root/*": "${webRoot}/*"
+      }
     }
   ]
 }

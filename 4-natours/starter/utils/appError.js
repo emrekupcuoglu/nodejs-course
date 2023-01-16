@@ -1,16 +1,15 @@
 // !All errors that we create using the AppError class will we operational errors
 
-// We will create our own error class instead of using the built in oen to streamline the process
-// our error class will inherit from the built in Error class
+// We will create our own error class instead of using the built in order to streamline the process.
+// Our error class will inherit from the built-in Error class.
 class AppError extends Error {
   constructor(message, statusCode) {
-    // We pass in the message to the built in Error class
-    // because message is the only parameter the built in Error class accepts.
+    // We pass in the message to the built-in Error class
+    // because message is the only parameter the built-in Error class accepts.
     super(message);
     this.statusCode = statusCode;
     // We don't need to pass in the status because it depends on the statusCode
-    // If the status code starts with 400 it status is "fail" otherwise it is "error"
-
+    // If the status code starts with 400, the status is "fail" otherwise it is "error"
     this.status = this.statusCode.toString().startsWith("4") ? "fail" : "error";
     // All the errors that we create using this class will be operational errors.
     // We set the isOperational to true.

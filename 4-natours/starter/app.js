@@ -341,9 +341,9 @@ app.use("/api/v1/reviews", reviewRouter);
 // and we can add a middleware at the end to handle them
 // We can use app.{http method} but we would need one for each method
 // like this: app.get().post()...
-// But we don't want that we to handle all the routes
+// But we don't want that we want to handle all the routes
 // and methods in one handler.
-// We can use app.get to handle all http methods
+// We can use app.all to handle all http methods
 // and we want pass in a star to handle all of the routes
 
 // This works because of the request response cycle

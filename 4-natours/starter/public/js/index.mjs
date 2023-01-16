@@ -5,7 +5,7 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 
-import { login } from "./login.mjs";
+import { login, logout } from "./login.mjs";
 import { displayMap } from "./mapBox.mjs";
 
 // console.log("axios", axios);
@@ -16,8 +16,8 @@ import { displayMap } from "./mapBox.mjs";
 // To fix this we first get the DOM element and then only parse the data if it exist.
 const mapBox = document.querySelector("#map");
 const loginForm = document.querySelector(".form");
+const logoutBtn = document.querySelector(".nav__el--logout");
 
-// * VALUES
 if (loginForm) {
   const email = document.querySelector("#email");
   const password = document.querySelector("#password");
@@ -26,6 +26,14 @@ if (loginForm) {
     login(email.value, password.value);
   });
 }
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    logout();
+  });
+}
+
 // * DELEGATION
 // We need to get the tour location data but we don't need to do an AJAX request to the API for that
 // We can expose the location data in the HTML and use that in the JavaScript

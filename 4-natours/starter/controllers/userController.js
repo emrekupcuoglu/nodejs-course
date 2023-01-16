@@ -31,12 +31,12 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // 2. Update user document
 
-  // We will user findByIdAndUpdate because .update() method doesn't run validators by default
-  // and we need the validators off because otherwise wee need to send the password and passwordConfirm in the body.
+  // We will use findByIdAndUpdate because .update() method doesn't run validators by default
+  // and we need the validators off because otherwise we need to send the password and passwordConfirm in the body.
   // For this we can either use save with validators off or use update
   // We set the new to true so that it returns the updated document  instead of the old document
 
-  // ! We can not let user put anything he wants inside the update query
+  // ! We can not let the user put anything he wants inside the update query
   // ! Because he can update his role or other sensitive information he should not be able to
   // Like this: body.role:"admin"
   // We want to filter input

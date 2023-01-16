@@ -21,15 +21,15 @@ process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION! Shutting down...");
   console.log(err);
   // ! We don't need the server because uncaught exceptions happen only in synchronous code
-  // ! and anything t odo with server is async
+  // ! and anything to do with server is async
   // server.close(() => {
-  //   // ! In the unhandled exception crashing the application is optional
-  //   // ! but when there is an uncaught exception we really really need to crash the application
-  //   // !Because after there is a uncaught exception
-  //   // !the entire node process is in a so-called unclean state.
-  //   // !To fixed that process needs to be terminated and restarted.
-  //   // In production we should have a tool in place to restart the application.
-  //   // Many hosting services do that out of the box.
+  // ! In the unhandled exception crashing the application is optional
+  // ! but when there is an uncaught exception we really really need to crash the application
+  // ! Because after there is a uncaught exception
+  // ! the entire node process is in a so-called unclean state.
+  // ! To fixed that process needs to be terminated and restarted.
+  // In production we should have a tool in place to restart the application.
+  // Many hosting services do that out of the box.
   //   process.exit(1);
   // });
 

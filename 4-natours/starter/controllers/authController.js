@@ -87,7 +87,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
 
   // 1. Check if email and password exist
   if (!email || !password) {
@@ -111,6 +111,47 @@ exports.login = catchAsync(async (req, res, next) => {
   // 3. If everything is ok, send the JWT to the client
   createSendToken(user, 200, res);
 });
+
+// ! this is not a very same way of doing this because even though the user has no access to the cookie
+// ! and thinks that he is logged out in reality he is not really logged out of the system.
+// ! He just doesn't have access to it but if someone intercept the jwt token than they can easily access the system.
+// ! To fix this we can use session id or create a blacklist that keeps a list of JWTs that should be invalidated.
+// ! And then check if the jwt coming is in the blacklist if it is do not log the user.
+// ! Or just use a session cookie because if we do all of this we are not stateless anymore and that is the only advantage of JWTs.
+// We are using an HTTP only cookie and we have no access to that cookie
+// we can not even destroy it even if we wanted to
+// But we need to delete the cookie so that the user logs out
+// There is a clever work around for this
+// We create and send a new cookie with the same name but with an empty value
+// and set the expiry date really short.
+// This effectively deletes the cookie.
+exports.logout = (req, res, next) => {
+  const cookieOptions = {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+    // * We don't need to set this to secure because there is no sensitive data
+    // but i thinks it is a good idea to set it anyway
+  };
+  // res.cookie("jwt", "logged out");
+  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+  // !!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // ! We can just use the res.clearCookie instead of using a hack to implement the logout functionality
+  // ! These other methods are or should be implemented in the isLOggedIn handler
+  // When we set the value of the jwt to "logged out" to hack deleting an http only cookie
+  // we get a jwt malformed error in the isLoggedIn handler.
+  // To fix that we can use another hack that Jonas taught (not recommended), the hack is to
+  // not use the catchAsync and instead use a try catch block and instead of catching a potential error in the catch block,
+  // which will always have the jwt malformed error, we can just call next and not handle a potential error.
+  // OR we can set the expiry date of the cookie to a past data and it will be deleted immediately and this won't cause a jwt malformed error
+  // OR we can check if the cookie named jwt is equal to a certain value we set when we log the user out like this:
+  // res.cookies.jwt === "logged out" and not run the jwt verify function
+  // * To clear a cookie the cookie options of the clearCookie needs to be same as the cookieOptions when we are setting the cookie
+  // *We set the cookie with the res.cookie
+  res.clearCookie("jwt", cookieOptions);
+  res.status(200).json({
+    status: "success",
+  });
+};
 
 exports.protect = catchAsync(async (req, res, next) => {
   // We have created the token as a let because we want to access it from outside the  if statement
@@ -156,7 +197,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // We then call the function
   const jwtVerifyPromise = promisify(jwt.verify);
   const decoded = await jwtVerifyPromise(token, process.env.JWT_SECRET);
-  console.log(decoded);
+  // console.log(decoded);
 
   // *3.Check if user still exist
   // This is the reason why we have the id in the payload
@@ -182,28 +223,41 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 // This middleware is similar to protect but the goal is not to protect
 // instead it is to check if the user is logged in or not.
-exports.isLoggedIn = async (req, res, next) => {
-  if (req.cookies.jwt) {
-    // 1. Verify token
-    const jwtVerifyPromise = promisify(jwt.verify);
-    const decoded = await jwtVerifyPromise(
-      req.cookies.jwt,
-      process.env.JWT_SECRET
-    );
+// ! We don't want to use catchAsync here because:
+// In the logout handler we are sending a malformed JWT because we are replacing the
+// original JWT with a dummy one that has a really short expire date.
+// But this causes an error and when we use catchAsync this error is then passed on to the
+// global error handler. We don't want that we want to catch the error here locally and then call next.
+// We are purposely creating this error because this is a work around destroying http only cookies.
+// Because we can not manipulate http only cookies we can not even destroy it.
+// ! Instead of doing this the way Jonas did we and not using the async
+// ! I simply checked if the jtw === "logged out" and this fixed the malformed jwt problem.
+// ! We can just put the cookie expiry date to a past time and that would work as well.
+// ! We can also use the res.clearCookie method of express.js which probably would be better. (we have opted for this one)
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  // console.log(req.cookies.jwt);
+  // we don't need this because we have used res.clearCookie
+  // if (!req.cookies.jwt || req.cookies.jwt === "loggedout") return next();
+  if (!req.cookies.jwt) return next();
+  // 1. Verify token
+  const jwtVerifyPromise = promisify(jwt.verify);
+  const decoded = await jwtVerifyPromise(
+    req.cookies.jwt,
+    process.env.JWT_SECRET
+  );
 
-    // 2. Check if user still exist
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) return next();
+  // 2. Check if user still exist
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) return next();
 
-    // 3. Check if the user has changed their password after the jwt was issued
-    if (currentUser.changedPasswordAfter(decoded.iat)) return next();
+  // 3. Check if the user has changed their password after the jwt was issued
+  if (currentUser.changedPasswordAfter(decoded.iat)) return next();
 
-    // If the user exist and logged in we can make the user accessible in out templates
-    // to do that we use res.locals and our pug templates will then have access to them
-    res.locals.user = currentUser;
-  }
+  // If the user exist and logged in we can make the user accessible in out templates
+  // to do that we use res.locals and our pug templates will then have access to them
+  res.locals.user = currentUser;
   next();
-};
+});
 // Normally we can not pass in arguments to middleware functions
 // To do that we are going to create a wrapper function
 // and that function will return a function that we will use as middleware .
@@ -302,7 +356,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     // behind the scenes mongoDB will do some converting to be able to compare them so we don't have to
     // passwordResetExpires: { $gt: Date.now() },
   });
-  console.log(user);
+  // console.log(user);
 
   if (!user) return next(new AppError("Token is invalid or expired", 400));
   user.password = req.body.password;

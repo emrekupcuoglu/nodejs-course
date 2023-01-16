@@ -34,39 +34,75 @@ const handleJWTExpiredError = () => {
   return new AppError(message, 401);
 };
 
-const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
+const sendErrorDev = (err, req, res) => {
+  // * A) API
+  // originalUrl is the basically the entire URL but without the host
+  // It looks like the route
+  if (req.originalUrl.startsWith("/api")) {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+  }
+  // * B) RENDERED WEBSITE
+  console.error("ERROR bomb:", err);
+
+  return res.status(err.statusCode).render("error", {
+    title: "Something went wrong",
     message: err.message,
-    stack: err.stack,
   });
 };
 
-const sendErrorProd = (err, res) => {
-  // Operational, trusted error: send message to the client.
-  if (err.isOperational) {
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-    });
+const sendErrorProd = (err, req, res) => {
+  // * A) API
+  // * A.1 Operational, trusted error: send message to the client.
 
-    // Programming or other unknown error: do not leak error details.
-  } else {
+  if (req.originalUrl.startsWith("/api")) {
+    if (err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    }
+
+    // * A.2 Programming or other unknown error: do not leak error details.
     // 1. Log error for developers
     // There are real logging libraries on npm that we could use here instead of just having this simple console.error
     // but just logging the error to hte console will make it visible onb the hosting platforms that we are going to use.
     // In a simple app like this it is enough.
-    console.error("ERROR bomb:", err.name);
+    console.error("ERROR bomb:", err);
 
     // 2. Send generic error message to the client
-    res.status(err.statusCode).json({
+    return res.status(err.statusCode).json({
       status: "error",
       message: "Something went very wrong!",
     });
   }
-};
 
+  // * B) RENDERED WEBSITE
+  // * B.1 Operational, trusted error: send message to the client.
+
+  if (err.isOperational) {
+    return res.status(err.statusCode).render("error", {
+      title: "Something went wrong!",
+      message: err.message,
+    });
+  }
+  // *B.2) Programming or other unknown error: do not leak error details.
+  // 1. Log error for developers
+  // There are real logging libraries on npm that we could use here instead of just having this simple console.error
+  // but just logging the error to hte console will make it visible onb the hosting platforms that we are going to use.
+  // In a simple app like this it is enough.
+  console.error("ERROR bomb:", err);
+
+  // 2. Send generic error message to the client
+  res.status(err.statusCode).render("error", {
+    title: "Something went wrong",
+    message: "Please try again later.",
+  });
+};
 module.exports = (err, req, res, next) => {
   // This shows us the stack trace
   // console.log(err.stack);
@@ -79,12 +115,18 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || "error";
 
   if (process.env.NODE_ENV === "development") {
-    sendErrorDev(err, res);
+    sendErrorDev(err, req, res);
   }
   if (process.env.NODE_ENV === "production") {
     // We are creating a copy of the err
     // because it is not a good practice to change the arguments of a function
+
     let error = { ...err };
+    // ! AppError inherits the message property from the Error class and {...err} doesn't copy the prototype chain
+    // ! Because of this, this causes a problem.
+    // ! We build the prototype chain to fix this
+    Object.setPrototypeOf(error, err);
+    // let error = Object.assign(err);
     // console.log(error);
 
     // Marking errors coming from mongoose as operational
@@ -114,6 +156,7 @@ module.exports = (err, req, res, next) => {
     if (err.name === "TokenExpiredError") {
       error = handleJWTExpiredError();
     }
-    sendErrorProd(error, res);
+
+    sendErrorProd(error, req, res);
   }
 };
