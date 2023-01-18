@@ -57,7 +57,6 @@ export const logout = async () => {
     if (res.data.status === "success") {
       // ! It is very important to set this to true
       // ! This forces the reload to happen from the server instead of the cache
-      window.location.reload(true);
       showAlert("success", "Logged out successfully!");
       setTimeout(() => {
         window.location.assign("/");

@@ -38,6 +38,16 @@ const createSendToken = (user, statusCode, res) => {
   // Second is the data we actually want to send in the cookie
   // Third argument is the options object
   res.cookie("jwt", token, cookieOptions);
+  // !!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!
+  // We have not implemented this because Jonas did it differently
+  // But the rest of implementation is in the isLoggedIn handler
+  // In the isLoggedIn handler we are checking if the user is logged in or not
+  // We are doing it by querying the database to not query the database needlessly we send
+  // some of the user info as a cookie so that we can pass them to the res.locals for pug
+  // to render without querying the database.
+  // const userCookie = { name: user.name, photo: user.photo };
+  // res.cookie("user", JSON.stringify(userCookie), cookieOptions);
+
   // Remove password from the output
   user.password = undefined;
   res.status(statusCode).json({
@@ -146,7 +156,7 @@ exports.logout = (req, res, next) => {
   // OR we can check if the cookie named jwt is equal to a certain value we set when we log the user out like this:
   // res.cookies.jwt === "logged out" and not run the jwt verify function
   // * To clear a cookie the cookie options of the clearCookie needs to be same as the cookieOptions when we are setting the cookie
-  // *We set the cookie with the res.cookie
+  // * We set the cookie with the res.cookie
   res.clearCookie("jwt", cookieOptions);
   res.status(200).json({
     status: "success",
@@ -216,8 +226,9 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // GRANT ACCESS TO THE PROTECTED ROUTE
   // ! Storing the currentUser in to the request is really crucial
-  // !Otherwise we wouldn't get access to the user in the next middleware restrictTo which we use for authorization.
+  // ! Otherwise we wouldn't get access to the user in the next middleware restrictTo which we use for authorization.
   req.user = currentUser;
+  res.locals.user = currentUser;
   next();
 });
 
@@ -229,7 +240,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 // But this causes an error and when we use catchAsync this error is then passed on to the
 // global error handler. We don't want that we want to catch the error here locally and then call next.
 // We are purposely creating this error because this is a work around destroying http only cookies.
-// Because we can not manipulate http only cookies we can not even destroy it.
+// Because we can not manipulate http only cookies, we can not even destroy it.
 // ! Instead of doing this the way Jonas did we and not using the async
 // ! I simply checked if the jtw === "logged out" and this fixed the malformed jwt problem.
 // ! We can just put the cookie expiry date to a past time and that would work as well.
@@ -253,11 +264,23 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
   // 3. Check if the user has changed their password after the jwt was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) return next();
 
-  // If the user exist and logged in we can make the user accessible in out templates
+  // If the user exist and logged in we can make the user accessible in our templates
   // to do that we use res.locals and our pug templates will then have access to them
+  // !!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!IMPORTANT!!!!
+  // ! We have implemented this differently in the course, we have put the set res.locals in the protect as well
+  // ! and only use the isLoggedIn handler on routes that the protect handler doesn't get called
+  // ! But we are still querying the database on every page only to put the name and the photo of the user
+  // ! which is not desirable in my opinion.
+  // Instead of checking if the user is logged in by querying the database we can set a cookie
+  // when we log the user inside the login handler and then check the cookie here and if the cookie exist we
+  // pass the info into the res.locals. We should not put sensitive information inside the cookie
+  // right now we are only putting the name and the photo of the user.
+  // const currentUser2 = JSON.parse(req.cookies.user);
+  // res.locals.user = currentUser2;
   res.locals.user = currentUser;
   next();
 });
+
 // Normally we can not pass in arguments to middleware functions
 // To do that we are going to create a wrapper function
 // and that function will return a function that we will use as middleware .
