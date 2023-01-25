@@ -48,6 +48,8 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
+mongoose.set("strictQuery", false);
+
 // First argument is the connection string
 // mongoose returns a promise
 mongoose

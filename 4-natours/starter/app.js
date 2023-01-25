@@ -14,6 +14,7 @@ const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
 const viewRouter = require("./routes/viewRoutes");
+const experimentalRouter = require("./routes/exprimentalRoutes");
 
 // Express module return a function and we run that function
 // and save its results to a variable called app
@@ -28,7 +29,7 @@ app.set("view engine", "pug");
 // It might seem a bit overkill to use the path.join() but we don't always know
 // whether a path we have received from somewhere already has a slash or not.
 // You will see this function all the time to prevent this kind of bug.
-// Because with path.join () we don't even need to think about slashes
+// Because with path.join() we don't even need to think about slashes
 app.set("views", path.join(__dirname, "views"));
 
 // 1. MIDDLEWARES
@@ -45,7 +46,7 @@ app.set("views", path.join(__dirname, "views"));
 // like images, html, etc.
 // When it can not found a route specified in any of our routes
 // it will look into the public folder
-// And with this we don''t have to specify the public folder in the url as well
+// And with this we don't have to specify the public folder in the url as well
 // We can just write http://127.0.0.1:3000/overview.html
 // instead of http://127.0.0.1:3000/public/overview.html
 app.use(express.static(path.join(__dirname, "public")));
@@ -67,6 +68,10 @@ app.use(
 // We can use the limit option to limit the amount of data that comes in the body
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
+// This middleware is for forms to work
+// extended allows us to pass in more complex data
+// We can also limit the amount of data that comes in as in the body parser
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 // ? Data Sanitization Against NoSQL Query Injection Attacks
 // This middleware looks at req.body, req.query, req.params and removes any dollar sign ($) and dot (.)
@@ -334,6 +339,7 @@ app.use("/", viewRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/experimental", experimentalRouter);
 
 // ? Handling Unhandled Routes
 // If a route reaches here past the tourRouter and the userRouter

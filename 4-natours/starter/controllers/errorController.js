@@ -36,7 +36,7 @@ const handleJWTExpiredError = () => {
 
 const sendErrorDev = (err, req, res) => {
   // * A) API
-  // originalUrl is the basically the entire URL but without the host
+  // originalUrl is basically the entire URL but without the host
   // It looks like the route
   if (req.originalUrl.startsWith("/api")) {
     return res.status(err.statusCode).json({
@@ -47,7 +47,7 @@ const sendErrorDev = (err, req, res) => {
     });
   }
   // * B) RENDERED WEBSITE
-  console.error("ERROR bomb:", err);
+  console.error("ERROR Rendered 💥:", err);
 
   return res.status(err.statusCode).render("error", {
     title: "Something went wrong",
@@ -72,7 +72,7 @@ const sendErrorProd = (err, req, res) => {
     // There are real logging libraries on npm that we could use here instead of just having this simple console.error
     // but just logging the error to hte console will make it visible onb the hosting platforms that we are going to use.
     // In a simple app like this it is enough.
-    console.error("ERROR bomb:", err);
+    console.error("ERROR 💥:", err);
 
     // 2. Send generic error message to the client
     return res.status(err.statusCode).json({
@@ -95,7 +95,7 @@ const sendErrorProd = (err, req, res) => {
   // There are real logging libraries on npm that we could use here instead of just having this simple console.error
   // but just logging the error to hte console will make it visible onb the hosting platforms that we are going to use.
   // In a simple app like this it is enough.
-  console.error("ERROR bomb:", err);
+  console.error("ERROR 💥:", err);
 
   // 2. Send generic error message to the client
   res.status(err.statusCode).render("error", {

@@ -92,6 +92,11 @@ exports.updateOne = (Model) =>
     });
   });
 
+/**
+ * @param {Class} Model - Model class
+ * @param {Object|null} [popOptions=null]
+ */
+
 exports.getOne = (Model, popOptions = null) =>
   catchAsync(async (req, res, next) => {
     // req.params are where all the parameters (variables) we define in the URL are stored

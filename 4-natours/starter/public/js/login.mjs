@@ -29,7 +29,6 @@ const loginFetch = async (email, password) => {
 
 export const login = async (email, password) => {
   try {
-    // console.log(email, password);
     const res = await axios({
       method: "POST",
       url: "http://127.0.0.1:8000/api/v1/users/login",
@@ -45,7 +44,7 @@ export const login = async (email, password) => {
         window.location.assign("/");
       }, 1500);
     }
-    console.log(res);
+    console.log("res", res);
   } catch (err) {
     showAlert("error", err.response.data.message);
   }

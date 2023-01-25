@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "User needs a name"],
+    trim: true,
   },
   email: {
     type: String,
@@ -24,7 +25,10 @@ const userSchema = new mongoose.Schema({
       message: "Please provide a valid e-mail",
     },
   },
-  photo: String,
+  photo: {
+    type: String,
+    default: "default.jpg",
+  },
 
   role: {
     type: String,

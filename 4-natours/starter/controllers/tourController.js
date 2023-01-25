@@ -1,6 +1,8 @@
 // const fs = require("fs");
+const multer = require("multer");
+const { async } = require("regenerator-runtime");
+const sharp = require("sharp");
 const Tour = require("../models/tourModel");
-
 const APIFeatures = require("../utils/APIFeatures");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
@@ -10,6 +12,91 @@ const handlerFactory = require("./handlerFactory");
 // const toursData = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 // );
+
+// ? Uploading multiple photos
+
+const multerStorage = multer.memoryStorage();
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+// To upload a single photo we used upload.single
+// But here we want to upload multiple files
+// And one one them we want to upload 1 image and in the other we want to upload 3 images
+// multer is capable of handling this
+// For this we are going to use upload.fields
+// We pass an array and each of the elements in an
+// object where we then specify the field name
+exports.uploadTourImages = upload.fields([
+  { name: "imageCover", maxCount: 1 },
+  { name: "images", maxCount: 3 },
+]);
+// * If we didn't need the image cover and instead only had one field which accepts multiple files
+// * We could of used upload.array("images",3)
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  // console.log(req.files);
+  if (!req.files.imageCover || !req.files.images) return next();
+
+  // 1. Cover Image
+  // when we have multiple files, it is on req.files NOT req.file
+  const imageCover = req.files.imageCover[0];
+  // We also need to make it possible so that our update tour handler
+  // picks up this imageCover filename to update it.
+  // To update the tours we are using the updateOne factory function to create a updateTour handler
+  // And that handler updates the tour using the data inside the req.body.
+  // So we need to put the imageCoverFileName into the body
+  req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpg`;
+  await sharp(imageCover.buffer)
+    .resize(2000, 1333)
+    .toFormat("jpg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/tours/${req.body.imageCover}`);
+
+  // 2. Images
+  // Initialize the array
+  req.body.images = [];
+  // !!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!
+  // ? Jonas said that this would cause the images to be not shown but it is not true
+  // ? Even if you do NOT await anything and use a forEach this still works because we are pushing the filename to the database immediately
+  // ? and then reloading the page. Iıf we didn't reload the page and need the images to be shown immediately without a refresh
+  // ? then we would need to wait them like we did with the user profile picture upload.
+  // ? But the functionality here is way different than there.
+  // ?But we will use a map and await it because I think it is a good practice to do so.
+  // ! There is a problem with async/await here
+  // * We have changed the forEach to map to fix it
+  // We are not using it correctly because right now the async await is only inside the callback function of the forEach loop
+  // and that will not stop the execution of code from reaching the next() because the await happens inside callback of the forEach loop.
+  // Fortunately there is a solution. Since the callback is an async function this will return a promise
+  // So if we change the forEach to a map and wait the promises the map method returns using Promise.all()
+  // We fix the async issue and promises resolve concurrently as well.
+  // Use for await of if you need to resolve promises sequentially.
+  const imagePromises = req.files.images.map((file, i) => {
+    // We need this variable called filename because we need to push this filename into
+    // req.body.images. Because req.body.images is an array we can not just do this:
+    // req.body.images=`tour-${req.params.id}-${Date.now()}-${i + 1}.jpg`;
+    // Because this works with only one file not with an array of files.
+    const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpg`;
+    req.body.images.push(filename);
+    // Jonas didn't add a return statement but we should or otherwise .map() returns nothing
+    return sharp(file.buffer)
+      .resize(2000, 1333)
+      .toFormat("jpg")
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/tours/${filename}`);
+  });
+  await Promise.all(imagePromises);
+
+  next();
+});
 
 // We are creating a middleware so that when the request hits the getAllTours
 // queries are already modified

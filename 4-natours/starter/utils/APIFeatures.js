@@ -12,8 +12,8 @@ class APIFeatures {
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    // ?There are two ways to make queries with mongoose
-    // *1. We can use a filter object like we did in the mongo shell
+    // ? There are two ways to make queries with mongoose
+    // * 1. We can use a filter object like we did in the mongo shell
     // To read documents from the database we use the find() method
     // just like we used in the mongo shell
     // When we don't pass anything into it it will return all the documents in the collection
@@ -21,7 +21,7 @@ class APIFeatures {
     // This also returns a promise so we have to await it
     // const tours = await Tour.find();
 
-    // ?FILTERING
+    // ? FILTERING
     // If we add a filter object we can make a query
     // const tours = await Tour.find({ duration: 5, difficulty: "easy" });
     // req.query is similar to the { duration: 5, difficulty: "easy" } object so we just use
@@ -50,9 +50,10 @@ class APIFeatures {
 
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replaceAll(
-      /\bgte|gt|lte|lt\b/g,
+      /\bgte\b|\bgt\b|\blte\b|\blt\b/g,
       (match) => `$${match}`
     );
+    console.log(queryStr);
 
     this.query = this.query.find(JSON.parse(queryStr));
     return this;
@@ -106,7 +107,7 @@ class APIFeatures {
 
   /**
    *
-   * @tutorial This is an async function. Because of that this function needs to be the last in chaining
+   * @tutorial This is an async function. Because of that this function needs to be the last in method chaining
    */
   async paginate() {
     // ?PAGINATION
@@ -126,8 +127,8 @@ class APIFeatures {
       // Count documents returns a Query Object and that Query Object returns the number of documents
       const numTours = await this.model.countDocuments();
       if (skippedBy >= numTours) throw new Error("This page does not exist");
-      // !IMPORTANT
 
+      // !IMPORTANT
       // Date.now() we have used in the schema gives the date in miliseconds but mongo automatically converts it so it makes sense
       // When we use call the Date.now() ourselves all the documents get the same createdAt value
       // And this creates a problem when we use sorting and pagination together

@@ -94,3 +94,5 @@ input validation like this: ["John", "John"] + "Doe" results in "John,John Doe
 
 *To fight this check expected type as part of the validation
 *Implement robust error handling mechanism using try/catch, domain, and cluster
+
+With Mongoose set sanitizeFilter option to true for the whole project or for queries that need sanitization.

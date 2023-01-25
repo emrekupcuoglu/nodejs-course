@@ -1,5 +1,81 @@
 const nodemailer = require("nodemailer");
+const pug = require("pug");
+const htmlToText = require("html-to-text");
 
+module.exports = class Email {
+  constructor(user, url) {
+    this.to = user.email;
+    this.firstName = user.name.split(" ")[0];
+    this.url = url;
+    this.from = `Emre Küpçüoğlu <${process.env.EMAIL_FROM}>`;
+  }
+
+  newTransport() {
+    if (process.env.NODE_ENV === "production") {
+      // code for sendGrid
+      return 1;
+    }
+
+    return nodemailer.createTransport({
+      // We need to define host instead of service because Mailtrap is not one of the default services that come configured with nodemailer
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      logger: true,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+  }
+
+  async send(template, subject) {
+    // 1. Render the HTML based on a pug template
+    // Up until this point when we are using pug we used it with res.render
+    // res.render creates an HTML based on the pug template and sends it to the client
+    // But in this case we do not want to send the HTML to the client.
+    // ALl we want to do is to basically create the HTML out of the template so
+    // that we can then send taht HTML as the email.
+    // For this we need to require the pug package
+    // Just like with res.render we can also pass in data to into renderFile
+    const html = pug.renderFile(
+      `${__dirname}/../views/emails/${template}.pug`,
+      {
+        firstName: this.firstName,
+        url: this.url,
+        subject,
+      }
+    );
+
+    // 2. Define the email options
+    const mailOptions = {
+      // here we specify where the email is coming from
+      from: this.from,
+      // here we specify the recipient address
+      to: this.to,
+      subject,
+      // this is the html version
+      html,
+      // This is the text version of the email
+      // * It is really important to include a text version of the email because
+      // Iıt is better for email delivery rates and also for spam folders.
+      // And also some people just prefer plain text emails.
+      // So we need aa way of converting all the HTML into simple text
+      // So stripping out all the HTML and leaving only content
+      // Fot this we are going to use the html-to-text package
+      text: htmlToText.convert(html),
+    };
+
+    // 3. Create a transport and send email
+    await this.newTransport().sendMail(mailOptions);
+  }
+
+  async sendWelcome() {
+    await this.send("welcome", "Welcome to the Natours family");
+  }
+};
+
+// ! Code below is old code it is here for learning purposes
 const sendEmail = async (options) => {
   // We need to follow 3 steps in order to send mails with nodemailer
   // 1. Create a transporter
@@ -24,9 +100,8 @@ const sendEmail = async (options) => {
   //
   //
   //
-  // Name of the service is we are going to use Mailtrap
   const transporter = nodemailer.createTransport({
-    // We need to define host instead of service because Mailtrap is not once the default services that come configured with nodemailer
+    // We need to define host instead of service because Mailtrap is not one of the default services that come configured with nodemailer
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
     logger: true,
@@ -44,7 +119,7 @@ const sendEmail = async (options) => {
     // here we specify the recipient address
     to: options.email,
     subject: options.subject,
-    // This si the text version of the email
+    // This is the text version of the email
     text: options.message,
     // this is the html version
     // html:
@@ -54,4 +129,4 @@ const sendEmail = async (options) => {
   await transporter.sendMail(mailOptions);
 };
 
-module.exports = sendEmail;
+// module.exports = sendEmail;

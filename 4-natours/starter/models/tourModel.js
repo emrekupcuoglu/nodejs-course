@@ -147,7 +147,7 @@ const tourSchema = new mongoose.Schema(
 
           // !Using the code below for update validators
 
-          // This keywords doesn't points to the document
+          // this keywords doesn't points to the document
           // But we can get the operation from this.op
           // I tried with this.op===findOneAndUpdate
           // But even though I updated the document this.op is equals to find
@@ -286,7 +286,7 @@ const tourSchema = new mongoose.Schema(
       },
     ],
     // EMBEDDING
-    // We get the guides array from the  POST request then use a pre hook to
+    // We get the guides array from the POST request then use a pre hook to
     // embed the guides into the tour document.
     // guides: Array,
 
@@ -366,7 +366,7 @@ tourSchema.virtual("durationWeeks").get(function () {
 // ? Virtual Populate
 // We have parent referencing on the review documents but when we want to get reviews belonging to a tour we stumble into a problem
 // We can not do child referencing because reviews might get too big and exceed the 16 megabytes max size
-// So we user an pretty advanced mongoose feature virtual populate to fix this issue
+// So we use a pretty advanced mongoose feature called, virtual populate to fix this issue.
 
 // First argument is the name of the virtual field
 // Second argument is an options object
@@ -424,9 +424,9 @@ tourSchema.pre("save", function (next) {
 // map method will assign the result of each iteration to the new element in the guides array
 // We have an async function that returns a promise. So the guides array is an array full of promises
 // ! mongoose do NOT return promises by default.It return queries which are thenable
-// ! We need a promise for promise.all this code works but throws an error that doesn't stop execution but an error non the less
+// ! We need a promise for promise.all. This code works but throws an error that doesn't stop execution but an error non the less
 // ! We can turn it into a promise using the .exec() method
-// ! MONGOOSE RECOMMENDS USING .EXEC() WITH AWAIT
+// ! MONGOOSE RECOMMENDS USING .EXEC() WHEN USING ASYNC/AWAIT
 // const guidesPromises = this.guides.map((id) => User.findById(id).exec());
 // ! or we can use an async function inside the .map() method and await it inside the map method
 // ! this returns a promise that we can use in Promise.all().

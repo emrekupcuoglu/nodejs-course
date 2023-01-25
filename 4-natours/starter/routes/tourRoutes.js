@@ -78,9 +78,9 @@ const router = express.Router();
 // We have done this in the reviewRouter
 router.use("/:tourId/reviews", reviewRouter);
 
-// ?ALIASING
+// ? ALIASING
 // Let's say that we have a route that is commonly visited
-// Like the top 54 and cheapest tours
+// Like the top 5 and cheapest tours
 // We can create a route for that
 // This is called aliasing
 // We still want to get all the tours so we use that function
@@ -156,6 +156,8 @@ router
   .patch(
     authController.protect,
     authController.restrictTo("admin", "lead-guide"),
+    tourController.uploadTourImages,
+    tourController.resizeTourImages,
     tourController.updateTour
   )
   .delete(

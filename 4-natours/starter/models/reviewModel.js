@@ -21,7 +21,7 @@ const reviewSchema = new mongoose.Schema(
       default: Date.now,
     },
     // We did reference the tours in the review document using the parent referencing in the course
-    // but i think irt would be better to embed the tours into the review because we would not query a review without the tour
+    // but I think it would be better to embed the tours into the review because we would not query a review without the tour
     // and a review can be for only one tour
     tour: {
       type: mongoose.Schema.Types.ObjectId,

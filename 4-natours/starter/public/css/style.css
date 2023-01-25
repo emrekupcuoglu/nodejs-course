@@ -105,9 +105,11 @@ body {
 }
 .alert--success {
   background-color: #20bf6b;
+  text-transform: capitalize;
 }
 .alert--error {
   background-color: #eb4d4b;
+  text-transform: capitalize;
 }
 
 .heading-secondary {

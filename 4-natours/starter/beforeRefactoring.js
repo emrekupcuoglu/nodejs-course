@@ -210,14 +210,14 @@ const JSEND = {
 
 // *5 Be Stateless
 // ALl state is handled on the client
-// This meand that each request must contain all the information
-// neccessary to process a certain request.
+// This means that each request must contain all the information
+// necessary to process a certain request.
 // The server should not have to remember previous requests
 
-// Exapmles of state: loggedIN    currentPage
+// Examples of state: loggedIN    currentPage
 
 // We call the JSON.parse to turn the JSON into a JavaScript object
-// We do this because json() method of express.js automaticly turns JAvaScript object into JSON
+// We do this because json() method of express.js automatically turns JAvaScript object into JSON
 // By calling the JSON.stringify() method
 
 const toursData = JSON.parse(
@@ -410,7 +410,7 @@ tourRouter
 
 // *Info About Middleware
 // If we put a middleware here and send a get or post request to the
-// "/api/v1/tours" middleware will not exucuted
+// "/api/v1/tours" middleware will not executed
 // Because middleware comes after the route handler.
 // This happens because route handlers are middleware as well.
 // And the route handler ends the request - response cycle.

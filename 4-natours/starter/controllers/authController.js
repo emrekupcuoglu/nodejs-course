@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
-const sendEmail = require("../utils/email");
+const Email = require("../utils/email");
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -91,6 +91,11 @@ exports.signup = catchAsync(async (req, res, next) => {
   // Third argument is an options object
   // We have specified the expiration time. We can use a special string like 90d and the
   // signing algorithm will automatically understand that as 90 days.
+
+  // Sending email to the user
+  const url = `${req.protocol}://${req.get("host")}/me`;
+  console.log(url);
+  await new Email(newUser, url).sendWelcome();
 
   createSendToken(newUser, 201, res);
 });
@@ -277,6 +282,7 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
   // right now we are only putting the name and the photo of the user.
   // const currentUser2 = JSON.parse(req.cookies.user);
   // res.locals.user = currentUser2;
+  req.user = currentUser;
   res.locals.user = currentUser;
   next();
 });
@@ -345,11 +351,11 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // because we want to do more than just sending the error to the user.
   // If there is an error we want to delete the passwordReset and passwordResetExpires field from the user document.
   try {
-    await sendEmail({
-      email: user.email,
-      subject: "Your password reset token (valid for 10 mins)",
-      message,
-    });
+    // await sendEmail({
+    //   email: user.email,
+    //   subject: "Your password reset token (valid for 10 mins)",
+    //   message,
+    // });
 
     res.status(200).json({
       status: "success",
@@ -403,13 +409,10 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   if (!(await user.correctPassword(currentPassword)))
     return next(new AppError("Wrong password. Try again.", 401));
   // 3. If so update the password
-  user.password = req.body.newPassword;
+  user.password = req.body.passwordNew;
   user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
+
   // 4. Log the user in, send JWT
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: "success",
-    token,
-  });
+  createSendToken(user, 200, res);
 });
