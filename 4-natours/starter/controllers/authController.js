@@ -1,5 +1,6 @@
 //We will implement most of the user related stuff like creating new users
 // logging users in or updating passwords in the authenticationController
+const { async } = require("regenerator-runtime");
 const crypto = require("crypto");
 const { promisify } = require("node:util");
 const jwt = require("jsonwebtoken");
@@ -7,7 +8,6 @@ const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const Email = require("../utils/email");
-const { async } = require("regenerator-runtime");
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -95,7 +95,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   // Sending email to the user
   const url = `${req.protocol}://${req.get("host")}/me`;
-  console.log(url);
   await new Email(newUser, url).sendWelcome();
 
   createSendToken(newUser, 201, res);
@@ -314,7 +313,6 @@ exports.restrictTo =
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1. Get users based on POSTed email
   const user = await User.findOne({ email: req.body.email });
-  console.log("req.body", req.body);
 
   if (!user)
     return next(
@@ -344,8 +342,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // A URL needs to start with http or https which is the protocol
   // We get which protocol we are using from the request
   // Then we get the host
-  console.log("req.baseUrl", req.baseUrl);
-  console.log("req.hostname", req.hostname);
 
   // API
   let resetURL = `${req.protocol}://${req.get(
@@ -359,7 +355,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       "host"
     )}/resetPassword/${resetToken}`;
   }
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to:${resetURL}.\nIf you didn't forget your password please ignore this email.`;
 
   // We need a try catch block we can not simply use the catchAsync function we have created
   // because we want to do more than just sending the error to the user.

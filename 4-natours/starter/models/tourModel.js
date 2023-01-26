@@ -153,16 +153,22 @@ const tourSchema = new mongoose.Schema(
           // But even though I updated the document this.op is equals to find
           // it defaults to find because of how mongoose works
           // If we use the method below it will work both for create and findOneAndUpdate
-          console.log(this.op);
+          // console.log(this.op);
           if (this.op === "find") {
             // .getUpdate() method Returns the current update operations as a JSON object.
             // We have the $set operation and in there we have access to the price and the priceDiscount
             // With this method we have to send both the price and the priceDiscount
             // in the body of the request when we want to update the priceDiscount
             // otherwise it won't work.
-            console.log("0", this.getUpdate());
-            console.log("1", this.getUpdate().$set.priceDiscount);
-            console.log("2", this.getUpdate().$set.price);
+            // console.log("0", this.getUpdate());
+            // console.log("1", this.getUpdate().$set.priceDiscount);
+            // console.log("2", this.getUpdate().$set.price);
+
+            this.getUpdate();
+            // eslint-disable-next-line no-unused-expressions
+            this.getUpdate().$set.priceDiscount;
+            // eslint-disable-next-line no-unused-expressions
+            this.getUpdate().$set.price;
             return (
               this.getUpdate().$set.priceDiscount < this.getUpdate().$set.price
             );
@@ -482,7 +488,7 @@ tourSchema.pre(/^find/, function (next) {
 // We can also expand it with other pre hooks if we want (e.g. we can add one for update as well)
 
 tourSchema.pre("findOneAndUpdate", function (next) {
-  console.log("hello from update");
+  // console.log("hello from update");
   this.setOptions({ runValidators: true });
   next();
 });
@@ -517,7 +523,7 @@ tourSchema.pre("findOneAndUpdate", function (next) {
 tourSchema.post("find", function (docs, next) {
   // Checking how long it takes to execute the current query
   const time = Date.now() - this.start;
-  console.log(`The query took ${time} miliseconds to finish`);
+  // console.log(`The query took ${time} miliseconds to finish`);
   next();
 });
 
@@ -539,9 +545,9 @@ tourSchema.pre("aggregate", function (next) {
   // ! We add this to the beginning using unshift and not to the end using push because:
   // * We only have access to the fields we have specified in the group stage
   // * So if we add it using push then we try to match secret tours it won't work
-  // *because secretTour field won't exist.
+  // * because secretTour field won't exist.
   const pipeline = this.pipeline();
-  console.log(pipeline[0]);
+  // console.log(pipeline[0]);
   if (Object.keys(pipeline[0])[0] === "$geoNear") {
     pipeline.splice(1, 0, { $match: { secretTour: { $exists: false } } });
   } else {

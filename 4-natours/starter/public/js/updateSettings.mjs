@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable import/prefer-default-export */
-import axios from "axios";
 import { async } from "regenerator-runtime";
+import axios from "axios";
 import { showAlert } from "./alerts.mjs";
 
 // !NOT USED FOR EDUCATION PURPOSES
@@ -21,7 +21,7 @@ export const updateUserData = async (name, email) => {
     return showAlert("error", "Invalid name");
   }
   try {
-    const res = await axios.patch("http://127.0.0.1:8000/submit-user-data", {
+    const res = await axios.patch("/submit-user-data", {
       name,
       email,
     });
@@ -55,7 +55,7 @@ const update = async (data, url, type) => {
  * @param {Object} data - Data object to be sent.
  */
 export const updatePassword = async (data) => {
-  const url = "http://127.0.0.1:8000/api/v1/users/updatePassword";
+  const url = "/api/v1/users/updatePassword";
   await update(data, url, "password");
 };
 /**
@@ -63,7 +63,7 @@ export const updatePassword = async (data) => {
  */
 export const resetPassword = async (data) => {
   const resetPasswordToken = window.location.pathname.split("/")[2];
-  const url = `http://127.0.0.1:8000/api/v1/users/resetPassword${resetPasswordToken}`;
+  const url = `/api/v1/users/resetPassword${resetPasswordToken}`;
   await update(data, url, "password");
   window.location.assign("/");
 };
@@ -72,7 +72,7 @@ export const resetPassword = async (data) => {
  * @param {string|string} [type="data"] - Default value is "data", if updating photo type is "photo".
  */
 export const updateSettings = async (data, type = "data") => {
-  const url = "http://127.0.0.1:8000/api/v1/users/updateMe";
+  const url = "/api/v1/users/updateMe";
   if (type === "photo") {
     const res = await update(data, url, "photo");
     return res.data.data.user.photo;

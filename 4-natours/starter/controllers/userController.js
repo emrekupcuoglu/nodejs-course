@@ -13,8 +13,8 @@ const multer = require("multer");
 // sharp is a really nice and eas yto use image processing for node.js.
 // There is a lot of stuff we can do with it but where it really shines is
 // resizing images in a very simple way.
-const sharp = require("sharp");
 const { async } = require("regenerator-runtime");
+const sharp = require("sharp");
 const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
@@ -45,7 +45,6 @@ const multerStorageDisk = multer.diskStorage({
     // this is the template for file names:
     //user-userId-timestamp.extension
     // user-787878ab78a-12341231231123.jpeg
-    console.log(file);
     const extension = file.mimetype.split("/")[1];
     // We call the callback with an error if there is an error or otherwise with null
     // and the second argument is the the filename
@@ -140,8 +139,8 @@ exports.getMe = (req, res, next) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // req.file comes from the multer middleware.
-  console.log("req.file", req.file);
-  console.log("req.body", req.body);
+  // console.log("req.file", req.file);
+  // console.log("req.body", req.body);
   // 1.Create error if user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(

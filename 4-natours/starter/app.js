@@ -7,6 +7,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
+const compression = require("compression");
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
@@ -14,7 +15,6 @@ const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
 const viewRouter = require("./routes/viewRoutes");
-const experimentalRouter = require("./routes/exprimentalRoutes");
 
 // Express module return a function and we run that function
 // and save its results to a variable called app
@@ -100,6 +100,19 @@ app.use(
   })
 );
 
+// ? Preparing Out App For Deployment
+// We compress the responses to prepare out app for production
+// We also need to clean most of our console.logs when deployed
+// because the logs will end up in our hosting platforms logs,
+// and we don't want to pollute these logs in production.
+
+// ? Compressing responses
+// This middleware compresses all the of our responses
+// whenever we send a text response to the client
+// response will get dramatically compressed them no matter if it is JSON or HTML code
+// This process doesn't affect images or other files.
+app.use(compression());
+
 // *3rd party middleware
 // We are using the environment variable to only use this logging middleware
 // when we are in the development environment
@@ -128,7 +141,7 @@ app.use("/api", limiter);
 // In each middleware function we have access to the request and the response
 // as well as the next function
 app.use((req, res, next) => {
-  console.log("Hello from the middleware");
+  // console.log("Hello from the middleware");
   // We need to call the next() function
   // If we didn't call it the request - response cycle would get stuck
   // And we would not be able to move on to the next steps
@@ -339,7 +352,6 @@ app.use("/", viewRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
-app.use("/api/v1/experimental", experimentalRouter);
 
 // ? Handling Unhandled Routes
 // If a route reaches here past the tourRouter and the userRouter

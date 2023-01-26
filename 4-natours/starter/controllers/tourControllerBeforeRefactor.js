@@ -12,7 +12,6 @@ const toursData = JSON.parse(
 // route handler that uses the id param separately
 // but this makes it easy and simpler
 exports.checkID = (req, res, next, val) => {
-  console.log(`Tour id is ${val}`);
   if (Number(req.params.id) > toursData.length) {
     return res.status(404).json({
       status: "fail",
@@ -23,7 +22,6 @@ exports.checkID = (req, res, next, val) => {
 };
 
 exports.checkBody = (req, res, next) => {
-  console.log("req.body", req.body);
   if (!(req.body.name && req.body.price)) {
     // 400 is code for bad request
     return res.status(400).json({
@@ -35,7 +33,6 @@ exports.checkBody = (req, res, next) => {
 };
 
 exports.getAllTours = (req, res) => {
-  console.log(req.requestTime);
   res.status(200).json({
     status: "success",
     requestedAt: req.requestTime,
@@ -50,7 +47,7 @@ exports.getAllTours = (req, res) => {
 
 exports.getTour = (req, res) => {
   // req.params are where all the parameters (variables) we define here are stored
-  console.log("req.params", req.params);
+  // console.log("req.params", req.params);
   const id = Number(req.params.id);
   const tour = toursData.find((el) => el.id === id);
 
@@ -66,6 +63,7 @@ exports.createTour = (req, res) => {
   const newID = toursData[toursData.length - 1] + 1;
   // newTour is the req.body + the newID
   // We can use Object.assign for this
+  // eslint-disable-next-line prefer-object-spread
   const newTour = Object.assign({ id: newID }, req.body);
   toursData.push(newTour);
   // !When we write to the file it shouldn't appear when we try to access it with a get method
@@ -75,6 +73,7 @@ exports.createTour = (req, res) => {
   fs.writeFile(
     `${__dirname}/dev-data/data/tours-simple.json`,
     JSON.stringify(toursData),
+    // eslint-disable-next-line no-unused-vars
     (err) => {
       // 201 stands for created
       res.status(201).json({

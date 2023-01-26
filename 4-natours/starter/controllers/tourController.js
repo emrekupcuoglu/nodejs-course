@@ -1,9 +1,8 @@
 // const fs = require("fs");
-const multer = require("multer");
 const { async } = require("regenerator-runtime");
+const multer = require("multer");
 const sharp = require("sharp");
 const Tour = require("../models/tourModel");
-const APIFeatures = require("../utils/APIFeatures");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const handlerFactory = require("./handlerFactory");
@@ -501,7 +500,6 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
       )
     );
   }
-  console.log("1");
   // We query for the startLocation because start location is what hold the geo-spatial point where each tour starts.
   // We will use a geo-spatial operator called geoWithin
   // This operator finds documents within a certain geometry and we need to define that geometry in the next step
@@ -535,7 +533,6 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
 exports.getDistances = catchAsync(async (req, res, next) => {
   const { latlng, unit } = req.params;
   const [lat, lng] = latlng.split(",");
-  console.log(unit);
   if ((!lat, !lng)) {
     next(
       new AppError(
