@@ -5,8 +5,12 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 
-import { login, logout } from "./login.mjs";
-import { updateSettings } from "./updateSettings.mjs";
+import { login, logout, sendForgotPasswordEmail } from "./login.mjs";
+import {
+  updateSettings,
+  updatePassword,
+  resetPassword,
+} from "./updateSettings.mjs";
 import { displayMap } from "./mapBox.mjs";
 
 // console.log("axios", axios);
@@ -20,6 +24,9 @@ const loginForm = document.querySelector(".form--login");
 const logoutBtn = document.querySelector(".nav__el--logout");
 const userDataForm = document.querySelector(".form-user-data");
 const userPasswordForm = document.querySelector(".form-user-password");
+
+const forgotPasswordForm = document.querySelector(".form-forgot-password");
+const resetPasswordForm = document.querySelector(".form-reset-password");
 
 if (loginForm) {
   loginForm.addEventListener("submit", (e) => {
@@ -37,23 +44,44 @@ if (logoutBtn) {
   });
 }
 
+// Forgot password
+if (forgotPasswordForm) {
+  forgotPasswordForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.querySelector("#email").value;
+    await sendForgotPasswordEmail(email);
+  });
+}
+
+// Reset Password
+if (resetPasswordForm) {
+  resetPasswordForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const password = document.querySelector("#password").value;
+    const passwordConfirm = document.querySelector("#password-confirm").value;
+    resetPassword({ password, passwordConfirm });
+  });
+}
+
 if (userDataForm) {
+  // Update user settings
   const photoUploadBtn = document.querySelector(".form__upload");
   const photoEl = document.querySelector(".form__user-photo");
   const photoNavEl = document.querySelector(".nav__user-img");
 
-  photoUploadBtn.addEventListener("change", async (e) => {
-    e.preventDefault();
-    const form = new FormData();
-    form.append("photo", document.querySelector("#photo").files[0]);
-    const photoId = await updateSettings(form, "photo");
+  if (photoUploadBtn) {
+    photoUploadBtn.addEventListener("change", async (e) => {
+      e.preventDefault();
+      const form = new FormData();
+      form.append("photo", document.querySelector("#photo").files[0]);
+      const photoId = await updateSettings(form, "photo");
 
-    if (photoId) {
-      photoEl.src = `/img/users/${photoId}`;
-      photoNavEl.src = `/img/users/${photoId}`;
-      console.log(photoId);
-    }
-  });
+      if (photoId) {
+        photoEl.src = `/img/users/${photoId}`;
+        photoNavEl.src = `/img/users/${photoId}`;
+      }
+    });
+  }
   userDataForm.addEventListener("submit", (e) => {
     e.preventDefault();
     // To send files using the API we have built instead of sending using the HTML forms
@@ -70,10 +98,11 @@ if (userDataForm) {
     // form.append("photo", document.querySelector("#photo").files[0]);
     // our AJAX call using axios will recognize this form here as an object and work
     //just the same as it did before.
-    console.log(form);
     updateSettings(form);
   });
 }
+
+// Update password
 
 if (userPasswordForm) {
   const passwordCurrentEl = document.querySelector("#password-current");
@@ -85,10 +114,13 @@ if (userPasswordForm) {
     const passwordCurrent = passwordCurrentEl.value;
     const passwordNew = passwordNewEl.value;
     const passwordConfirm = passwordConfirmEl.value;
-    await updateSettings(
-      { passwordCurrent, passwordNew, passwordConfirm },
-      "password"
-    );
+    // await updateSettings(
+    //   { passwordCurrent, passwordNew, passwordConfirm },
+    //   "password"
+    // );
+
+    updatePassword({ passwordCurrent, passwordNew, passwordConfirm });
+
     document.querySelector(".btn--save-password").textContent = "Save password";
     passwordCurrentEl.value = "";
     passwordNewEl.value = "";

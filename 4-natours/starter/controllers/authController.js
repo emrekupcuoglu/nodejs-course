@@ -7,6 +7,7 @@ const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const Email = require("../utils/email");
+const { async } = require("regenerator-runtime");
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -313,11 +314,13 @@ exports.restrictTo =
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1. Get users based on POSTed email
   const user = await User.findOne({ email: req.body.email });
+  console.log("req.body", req.body);
 
   if (!user)
     return next(
       new AppError(
-        "If there is an account associated with that email we have sent a reset link"
+        "If there is an account associated with that email we have sent a reset link",
+        200
       )
     );
 
@@ -341,16 +344,29 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // A URL needs to start with http or https which is the protocol
   // We get which protocol we are using from the request
   // Then we get the host
-  const resetURL = `${req.protocol}://${req.get(
+  console.log("req.baseUrl", req.baseUrl);
+  console.log("req.hostname", req.hostname);
+
+  // API
+  let resetURL = `${req.protocol}://${req.get(
     "host"
   )}/api/v1/users/resetPassword/${resetToken}`;
 
+  // Rendered Website
+
+  if (req.body.isRendered) {
+    resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/resetPassword/${resetToken}`;
+  }
   const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to:${resetURL}.\nIf you didn't forget your password please ignore this email.`;
 
   // We need a try catch block we can not simply use the catchAsync function we have created
   // because we want to do more than just sending the error to the user.
   // If there is an error we want to delete the passwordReset and passwordResetExpires field from the user document.
   try {
+    await new Email(user, resetURL).sendPasswordReset();
+
     // await sendEmail({
     //   email: user.email,
     //   subject: "Your password reset token (valid for 10 mins)",

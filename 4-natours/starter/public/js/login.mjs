@@ -1,6 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 /* eslint-disable no-undef */
 import axios from "axios";
+import { async } from "regenerator-runtime";
 
 import { showAlert } from "./alerts.mjs";
 
@@ -44,7 +45,6 @@ export const login = async (email, password) => {
         window.location.assign("/");
       }, 1500);
     }
-    console.log("res", res);
   } catch (err) {
     showAlert("error", err.response.data.message);
   }
@@ -61,6 +61,23 @@ export const logout = async () => {
         window.location.assign("/");
       }, 1500);
     }
+  } catch (err) {
+    showAlert("error", err.response.data.message);
+  }
+};
+
+export const sendForgotPasswordEmail = async (email) => {
+  let res;
+  try {
+    res = await axios.post(
+      "http://127.0.0.1:8000/api/v1/users/forgotPassword",
+      { email, isRendered: true }
+    );
+
+    showAlert(
+      "success",
+      "We have sent an email if you have an email registered in our database"
+    );
   } catch (err) {
     showAlert("error", err.response.data.message);
   }

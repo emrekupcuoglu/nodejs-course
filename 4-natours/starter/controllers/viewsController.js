@@ -1,8 +1,8 @@
+const { async } = require("regenerator-runtime");
 const Tour = require("../models/tourModel");
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
-const { async } = require("regenerator-runtime");
 
 exports.getOverview = catchAsync(async (req, res, next) => {
   // 1. Get tour data from collection
@@ -66,7 +66,6 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
   const excludedNames = ["", " "];
   const isValidName = !excludedNames.includes(req.body.name);
   if (req.body.name.length === 0 || !isValidName) {
-    console.log("123");
     return next(new AppError("Name cannot be empty", 400));
   }
   const updatedUser = await User.findByIdAndUpdate(
@@ -87,4 +86,12 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
     title: "Your account",
     user: updatedUser,
   });
+});
+
+exports.getForgotPasswordForm = catchAsync(async (req, res, next) => {
+  res.status(200).render("forgotPassword");
+});
+
+exports.getPasswordResetForm = catchAsync(async (req, res, next) => {
+  res.status(200).render("passwordReset");
 });
